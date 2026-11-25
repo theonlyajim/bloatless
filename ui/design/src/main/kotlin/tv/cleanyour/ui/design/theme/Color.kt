@@ -30,13 +30,14 @@ data class CytColors(
 )
 
 val DarkCytColors = CytColors(
-    bg = Color(0xFF000000), surface1 = Color(0xFF0E0E10), surface2 = Color(0xFF1C1C1E),
-    surface3 = Color(0xFF2A2A2E), rim = Color(0x33FFFFFF), outline = Color(0x1FFFFFFF),
+    // Bloatless: the near-black page, the #18181A cards with a #262628 hairline, and the teal accent.
+    bg = Color(0xFF0F0F10), surface1 = Color(0xFF18181A), surface2 = Color(0xFF1C1C1E),
+    surface3 = Color(0xFF2A2A2C), rim = Color(0xFF2A2A2C), outline = Color(0xFF262628),
     outlineStrong = Color(0x5CFFFFFF), textPrimary = Color(0xFFF5F5F7),
     textSecondary = Color(0xFFA1A1A6), textTertiary = Color(0xFF98989E),
-    primary = Color(0xFFF5F5F7), onPrimary = Color(0xFF000000), primaryPressed = Color(0xFFE2E2E6),
-    accent = Color(0xFF8C9BFF),
-    glowBrand = Color(0xFF5B6CFF), glowTv = Color(0xFFB9C2CC),
+    primary = Color(0xFF5DCAA5), onPrimary = Color(0xFF04342C), primaryPressed = Color(0xFF4AB892),
+    accent = Color(0xFF5DCAA5),
+    glowBrand = Color(0xFF1D9E75), glowTv = Color(0xFF1D9E75),
     success = Color(0xFF30D158), successContainer = Color(0xFF0D2A16),
     onSuccessContainer = Color(0xFF5CE07E), warning = Color(0xFFFFB340),
     warningContainer = Color(0xFF33240A), onWarningContainer = Color(0xFFFFC46B),
@@ -45,10 +46,11 @@ val DarkCytColors = CytColors(
     scrim = Color(0xA3000000),
     glassFillTop = Color.White.copy(alpha = 0.09f), glassFillBottom = Color.White.copy(alpha = 0.04f),
     glassSpecular = Color.White.copy(alpha = 0.08f),
-    highlightFillTop = Color.White.copy(alpha = 0.16f), highlightFillBottom = Color.White.copy(alpha = 0.06f),
-    highlightSpecular = Color.White.copy(alpha = 0.14f), highlightRim = Color.White.copy(alpha = 0.80f),
-    highlightRing = Color.White,
-    glowCoreAlpha = 0.24f, glowMidAlpha = 0.10f,
+    // Bloatless: the chosen row is tinted teal with a teal rim, as in the mockups.
+    highlightFillTop = Color(0x2E5DCAA5), highlightFillBottom = Color(0x145DCAA5),
+    highlightSpecular = Color.White.copy(alpha = 0.10f), highlightRim = Color(0xCC5DCAA5),
+    highlightRing = Color(0xFF5DCAA5),
+    glowCoreAlpha = 0.10f, glowMidAlpha = 0.04f,   // Bloatless: a quieter glow, the page reads flat
     isDark = true,
 )
 
@@ -57,9 +59,9 @@ val LightCytColors = CytColors(
     surface3 = Color(0xFFE6E6EA), rim = Color(0x1A000000), outline = Color(0x14000000),
     outlineStrong = Color(0x52000000), textPrimary = Color(0xFF0B0B0C),
     textSecondary = Color(0xFF4A4A50), textTertiary = Color(0xFF5A5A61),
-    primary = Color(0xFF0B0B0C), onPrimary = Color(0xFFFFFFFF), primaryPressed = Color(0xFF2A2A2E),
-    accent = Color(0xFF3D4FD6),
-    glowBrand = Color(0xFF5B6CFF), glowTv = Color(0xFFB9C2CC),
+    primary = Color(0xFF0F6E56), onPrimary = Color(0xFFFFFFFF), primaryPressed = Color(0xFF085041),
+    accent = Color(0xFF0F6E56),
+    glowBrand = Color(0xFF1D9E75), glowTv = Color(0xFF1D9E75),
     success = Color(0xFF157030), successContainer = Color(0xFFE3F4E8),
     onSuccessContainer = Color(0xFF0F5A26), warning = Color(0xFF8F5300),
     warningContainer = Color(0xFFFFF1DB), onWarningContainer = Color(0xFF7A4600),
@@ -69,8 +71,8 @@ val LightCytColors = CytColors(
     glassFillTop = Color.White.copy(alpha = 0.72f), glassFillBottom = Color.White.copy(alpha = 0.56f),
     glassSpecular = Color.White.copy(alpha = 0.50f),
     highlightFillTop = Color.White.copy(alpha = 0.95f), highlightFillBottom = Color.White.copy(alpha = 0.80f),
-    highlightSpecular = Color.White.copy(alpha = 0.60f), highlightRim = Color.Black.copy(alpha = 0.55f),
-    highlightRing = Color.Black,
+    highlightSpecular = Color.White.copy(alpha = 0.60f), highlightRim = Color(0xCC0F6E56),
+    highlightRing = Color(0xFF0F6E56),
     glowCoreAlpha = 0.14f, glowMidAlpha = 0.06f,
     isDark = false,
 )

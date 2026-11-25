@@ -1,5 +1,7 @@
 package tv.cleanyour.core.flows
 
+import tv.cleanyour.core.spec.PlacesSettings
+import tv.cleanyour.core.spec.PrayerSettings
 import java.time.LocalDate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -121,6 +123,10 @@ data class HomeScreenState(
     // 0.4.8 (PLAN item 3): "This is your TV now", the TV's screenshot after a look went to it from this page; null
     // before a send, while one runs, or when the TV gave no picture.
     val lookShot: ByteArray? = null,
+    // Bloatless: this TV's prayer times choice (PrayerPrefs), sent with every look.
+    val prayer: PrayerSettings = PrayerSettings.OFF,
+    // Bloatless: this TV's changing wallpaper (WallpaperPrefs), sent with every look.
+    val places: PlacesSettings = PlacesSettings.OFF,
 ) {
     val waiting: Int get() = waitingApps.size
 }
@@ -148,6 +154,9 @@ sealed interface HomeScreenIntent {
     data object RunSetupAgain : HomeScreenIntent       // 0.3.3 D2, NotOnTv.setupAgain
     data object HelpAddTv : HomeScreenIntent           // 0.3.3 D2, NotOnTv.helpAddTv
     data object HelperOff : HomeScreenIntent           // RFC-HELPER-1: the helper's "Switch off"
+    // Bloatless: a new prayer times choice; it is saved for this TV and the saved look goes to the TV with it.
+    data class SetPrayer(val settings: PrayerSettings) : HomeScreenIntent
+    data class SetPlaces(val settings: PlacesSettings) : HomeScreenIntent   // Bloatless: as SetPrayer, for the wallpaper
 }
 
 class HomeScreenMachine(
@@ -169,6 +178,8 @@ class HomeScreenMachine(
     private class OwnPictureStaged(val ref: BlobRef, val dim: Int, val jpeg: ByteArray)
     private data class LookResult(val sent: Boolean)
     private class LookShot(val png: ByteArray?)
+    private data class PrayerLoaded(val s: PrayerSettings)
+    private data class PlacesLoaded(val s: PlacesSettings)
     private var staged: ByteArray? = null   // the bytes of state.newPicture, kept once the TV has them
     private var updated = false   // D4: this screen updated the launcher; the stored snapshot does not know yet
     // look2: what the Look sheet works from, as the last load read it: the saved choice (what was
@@ -184,7 +195,7 @@ class HomeScreenMachine(
 
     override fun reduce(state: HomeScreenState, event: Any): HomeScreenState = when (event) {
         is Loaded -> event.s.copy(busy = state.busy, stockPreview = state.stockPreview, drift = state.drift, updatePreview = state.updatePreview,
-            newPicture = state.newPicture, newDim = state.newDim, lookFailed = state.lookFailed, lookSending = state.lookSending, lookShot = state.lookShot).let { s ->
+            newPicture = state.newPicture, newDim = state.newDim, lookFailed = state.lookFailed, lookSending = state.lookSending, lookShot = state.lookShot, prayer = state.prayer, places = state.places).let { s ->
             saved = event.saved; earlier = event.earlier; cards = event.cards; keyNames = event.keyNames
             s.copy(look = state.look?.let { drafts.refresh(it, lookContext(s)) })
         }
@@ -210,6 +221,10 @@ class HomeScreenMachine(
             lookSending = state.lookSending || (state.look != null && state.busy == null && state.notOnTv == null))
         HomeScreenIntent.RestoreMine, is HomeScreenIntent.SetDock, is HomeScreenIntent.SetTheme -> state.copy(lookShot = null)
         is LookShot -> state.copy(lookShot = event.png)
+        is PrayerLoaded -> state.copy(prayer = event.s)
+        is HomeScreenIntent.SetPrayer -> state.copy(prayer = event.settings, lookShot = null)
+        is PlacesLoaded -> state.copy(places = event.s)
+        is HomeScreenIntent.SetPlaces -> state.copy(places = event.settings, lookShot = null)
         is LookResult -> if (event.sent) state.copy(newPicture = null, newDim = state.ownDim, lookFailed = false, lookSending = false)
             else state.copy(lookFailed = true, lookSending = false)
         // A photo made for a sheet that has closed since is dropped.
@@ -278,6 +293,22 @@ class HomeScreenMachine(
             HomeScreenIntent.CloseLook -> staged = null
             is OwnPictureStaged -> if (after.newPicture == event.ref) staged = event.jpeg
             is HomeScreenIntent.Look -> (event.edit as? LookEdit.SetKeyNames)?.let { e -> keyNames = e.on; scope.launch { saveKeyNames(e.on) } }
+            is HomeScreenIntent.SetPlaces -> scope.launch {
+                attempt { WallpaperPrefs(d.documents).save(tvId, event.settings) }
+                    .onFailure { effect(ManageEffect.Snackbar(SnackKind.FAILED, "", false)); return@launch }
+                if (after.notOnTv != null) return@launch
+                val choice = savedChoice()
+                if (choice?.isNew == true) pushSaved(choice, choice.dock)
+                else apply(savedDock() ?: after.dock.map { it.pkg }, after.themeId, after.pictureId, columns = savedColumns())
+            }
+            is HomeScreenIntent.SetPrayer -> scope.launch {
+                attempt { PrayerPrefs(d.documents).save(tvId, event.settings) }
+                    .onFailure { effect(ManageEffect.Snackbar(SnackKind.FAILED, "", false)); return@launch }
+                if (after.notOnTv != null) return@launch
+                val choice = savedChoice()
+                if (choice?.isNew == true) pushSaved(choice, choice.dock)
+                else apply(savedDock() ?: after.dock.map { it.pkg }, after.themeId, after.pictureId, columns = savedColumns())
+            }
             HomeScreenIntent.RestoreMine -> scope.launch {
                 val choice = savedChoice()
                 if (choice?.isNew == true) pushSaved(choice, choice.dock)
@@ -301,6 +332,8 @@ class HomeScreenMachine(
     }
 
     private suspend fun load() {
+        send(PrayerLoaded(attempt { PrayerPrefs(d.documents).load(tvId) }.getOrNull() ?: PrayerSettings.OFF))
+        send(PlacesLoaded(attempt { WallpaperPrefs(d.documents).load(tvId) }.getOrNull() ?: PlacesSettings.OFF))
         val tv = d.tv(tvId) ?: return
         val profile = d.profileOf(tv)
         val snap = d.snapshots.latest(tvId)

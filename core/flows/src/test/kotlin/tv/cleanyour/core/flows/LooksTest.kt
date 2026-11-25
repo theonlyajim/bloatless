@@ -411,7 +411,8 @@ class LooksTest {
     // look2 pictures (spec 6.2): every picture of today's looks, with its background colour, and no
     // new image bytes; the 0.4.0 ids keep working.
     @Test fun theGalleryHasEveryPictureWithItsColour() {
-        val p = BundledThemeSource().pictures()
+        // Bloatless: the Malaysian pictures come first (MalaysianPicturesTest); the rest is upstream's gallery as it was.
+        val p = BundledThemeSource().pictures().filterNot { it.id.startsWith("my-") }
         assertEquals(listOf("diwali", "aurora", "mist", "glass", "ruska", "curtains", "mountains", "lamp", "neon", "cobalt"), p.map { it.id })
         assertEquals(listOf("Diwali", "Aurora", "Mist", "Navy", "Autumn lake", "Curtains", "Mountains", "Lamp light", "Neon", "Cobalt"), p.map { it.name })
         assertEquals(listOf(0x120809, 0x070A14, 0x0E1022, 0x090C14, 0x07080D, 0x07060A, 0x000000, 0x141210, 0x0B0614, 0x020611),
@@ -644,5 +645,14 @@ class LooksTest {
         assertEquals(choice, prefs.load(id))
         assertEquals(choice.copy(columns = null), choice.withTheme("mist", columns = null))
         assertEquals(8, choice.withTheme("console").columns, "a new look keeps a saved count unless told")
+    }
+
+    // Bloatless: the Malaysian pictures, first, three of them dated to the end of their season.
+    @Test fun theMalaysianPicturesComeFirst() {
+        val all = BundledThemeSource().pictures()
+        val my = all.takeWhile { it.id.startsWith("my-") }
+        assertEquals(listOf("Raya", "Ramadan", "Merdeka", "Kampung", "Mosque at night", "East coast", "Batik", "Songket", "Tea hills"), my.map { it.name })
+        assertEquals(listOf("my-raya", "my-ramadan", "my-merdeka"), my.filter { it.until != null }.map { it.id })
+        assertTrue(my.all { it.festival == null && it.wallpaper.size in 50_000L..600_000L })
     }
 }

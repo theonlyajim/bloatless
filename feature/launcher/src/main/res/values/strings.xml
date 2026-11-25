@@ -131,4 +131,33 @@
     <string name="helper_card_escape">On the TV: Settings &gt; Accessibility &gt; Home button switches it off too.</string>
     <string name="helper_card_apps_only">Google TV keeps running in the background. Its Apps only mode quiets it, but it also switches Search and the Assistant off; you can switch it on in the TV\'s settings.</string>
     <string name="helper_card_switch_off">Switch off</string>
+    <!-- Bloatless: prayer times and the azan (PrayerSheet). -->
+    <string name="prayer_row">Prayer times</string>
+    <string name="prayer_row_off">Off</string>
+    <string name="prayer_row_on">%1$s · %2$s</string>
+    <string name="prayer_row_azan_off">azan off</string>
+    <string name="prayer_row_azan_on">azan on</string>
+    <string name="prayer_title">Prayer times</string>
+    <string name="prayer_subtitle">JAKIM prayer times on Home, and the azan when each one starts.</string>
+    <string name="prayer_show">Show prayer times</string>
+    <string name="prayer_state">State</string>
+    <string name="prayer_zone">Zone</string>
+    <string name="prayer_azan">Play the azan</string>
+    <string name="prayer_azan_note">Plays while the TV is on. Any remote button stops it.</string>
+    <string name="prayer_volume">Azan volume</string>
+    <string name="prayer_which">Azan for</string>
+    <string name="prayer_save">Save and send to the TV</string>
+    <string name="prayer_pick_zone">Choose a zone first</string>
+    <string name="home_change_look">Change the look</string>
+    <!-- Bloatless: the changing wallpaper (WallpaperSheet). -->
+    <string name="places_title">Changing wallpaper</string>
+    <string name="places_subtitle">Pictures of places around the world, new every week, each with its name.</string>
+    <string name="places_switch">Change the wallpaper</string>
+    <string name="places_switch_note">The TV fetches the week\'s pictures from Bing. Pictures with people in them are left out.</string>
+    <string name="places_every">New picture every</string>
+    <string name="places_15m">15 minutes</string>
+    <string name="places_1h">Hour</string>
+    <string name="places_6h">6 hours</string>
+    <string name="places_1d">Day</string>
+    <string name="places_save">Save and send to the TV</string>
 </resources>

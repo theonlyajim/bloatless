@@ -1,5 +1,6 @@
 package tv.cleanyour.core.flows
 
+import tv.cleanyour.core.spec.PrayerSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -56,6 +57,8 @@ data class TvCard(
     // 0.4.8 (Restarts): what this phone counted across the TV's restarts, while the new home screen is on it; null
     // before the first read on a path (a TV never switched has none).
     val restarts: RestartTally? = null,
+    // Bloatless: this TV's prayer times choice (PrayerPrefs), for the main screen's tile.
+    val prayer: PrayerSettings = PrayerSettings.OFF,
 )
 
 data class ManageState(
@@ -73,6 +76,7 @@ data class ManageState(
 enum class ManageSection(val key: String) {
     HOME_SCREEN("home"), MODULES("modules"), SWITCHED_OFF("switchedoff"), LEFTOVERS("leftovers"),
     RESTORE_POINT("restore"), TV_SETTINGS("tvsettings"),
+    PRAYER("prayer"),   // Bloatless: the Home screen page with its prayer times sheet open
 }
 
 sealed interface ManageIntent {
@@ -156,6 +160,7 @@ class ManageMachine(
                         stockHomeBack = d.stockHomeBacks[tv.id],
                         homeHelperOn = d.homeHelper && latest != null && HomeHelper.state(latest) == HomeHelper.State.ON,
                         restarts = attempt { d.restarts.load(tv.id) }.getOrNull()?.takeIf { it.path != null },
+                        prayer = attempt { PrayerPrefs(d.documents).load(tv.id) }.getOrNull() ?: PrayerSettings.OFF,
                     )
                 }
                 send(Loaded(cards))

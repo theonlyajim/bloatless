@@ -347,7 +347,7 @@ internal object ConfigCodecImpl {
         for ((k, v) in o) {
             if (k in MODELLED) continue
             unknown[k] = v.toJsonElement()
-            if (k !in CARRIED_27 && k !in CARRIED_30 && k !in CARRIED_READ) w += "unknown key $k; the launcher ignores it (carried as is)"
+            if (k !in CARRIED_27 && k !in CARRIED_30 && k !in CARRIED_READ && k !in PrayerKeys.KEYS && k != PlacesKeys.KEY) w += "unknown key $k; the launcher ignores it (carried as is)"
         }
         prerequisites30(o, dockRow ?: BUILT_IN.dockRow, appLibrary ?: BUILT_IN.appLibrary, w)
         val doc = LauncherConfigDoc(

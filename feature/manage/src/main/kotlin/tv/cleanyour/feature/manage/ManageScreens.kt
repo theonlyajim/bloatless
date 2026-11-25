@@ -51,6 +51,13 @@ import tv.cleanyour.core.flows.UpdateCheck
 import tv.cleanyour.core.model.Level
 import tv.cleanyour.core.model.PackageName
 import tv.cleanyour.core.planner.PlanKind
+import tv.cleanyour.ui.design.component.DashGrid
+import tv.cleanyour.ui.design.component.DashStat
+import tv.cleanyour.ui.design.component.DashStats
+import tv.cleanyour.ui.design.component.DashTileSpec
+import androidx.compose.material3.Text
+import tv.cleanyour.ui.design.component.FilterChips
+import tv.cleanyour.core.flows.OffRow
 import tv.cleanyour.ui.design.component.ActionColumn
 import tv.cleanyour.ui.design.component.Banner
 import tv.cleanyour.ui.design.component.BannerTone
@@ -111,6 +118,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
         )
     }) {
         ScreenTitle(stringResource(R.string.manage_title), titleTop)
+        Text(stringResource(R.string.dash_by), style = CytTheme.type.bodyMedium, color = CytTheme.colors.accent, modifier = Modifier.padding(top = 2.dp))
         if (state.offline) {
             Banner(
                 stringResource(R.string.manage_offline_banner), BannerTone.NEUTRAL, Modifier.padding(top = 16.dp), icon = CytIcons.WifiOff,
@@ -131,6 +139,12 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 level = stringResource(if (tv.level == Level.CUSTOM) R.string.manage_level_custom else R.string.manage_level_simple),
                 onClick = { onIntent(ManageIntent.RefreshThumbnail) },
             )
+            // Bloatless (mockup v4): three figures under the TV card; the four places people go most are tiles below.
+            DashStats(listOf(
+                DashStat(tv.switchedOff.toString(), stringResource(R.string.dash_stat_off)),
+                DashStat(tv.dockNames.size.toString(), stringResource(R.string.dash_stat_dock)),
+                DashStat(tv.restorePointAtMs?.let { shortDate(it, locale) } ?: "-", stringResource(R.string.dash_stat_restore)),
+            ), Modifier.padding(top = 12.dp))
             // Navigation into the wizard, whose own "Make it clean" is the guarded action (R5-W8 O1).
             // 0.4.7 (PM 11): "Run Setup again" stays visible for every TV, the one name for the way back in.
             // 0.4.7 (StockHomeBack): the TV turned its own home screen back on, so Run Setup again is the way back.
@@ -162,20 +176,24 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                 )
                 if (state.switchingHome) LiveLine(stringResource(R.string.manage_wizard_home_working))
             }
-            ListGroup(Modifier.padding(top = 16.dp)) {
-                // 0.3.3 D2: without the new home screen there is no dock to name; the row opens the reason.
-                // 0.4.7 (UX finding 8): installed but not in use says the TV's own is in use; and when the
-                // TV turned its own back on behind this app (StockHomeBack), the row says that.
-                ListRow(stringResource(R.string.manage_row_home),
-                    subtitle = when {
-                        tv.stockHomeBack -> stringResource(R.string.manage_row_home_stock_back)
-                        tv.homeHelperOn -> stringResource(R.string.manage_row_home_helper)   // RFC-HELPER-1 (test build)
-                        tv.ownHome -> stringResource(R.string.manage_row_home_own)
-                        tv.homeInstalledNotInUse -> stringResource(R.string.manage_row_home_not_in_use)
-                        else -> tv.dockNames.joinToString(", ").ifEmpty { null }
-                    },
-                    onClick = { onIntent(ManageIntent.Open(ManageSection.HOME_SCREEN)) })
-                ListDivider()
+            val homeLine = when {
+                tv.stockHomeBack -> stringResource(R.string.manage_row_home_stock_back)
+                tv.homeHelperOn -> stringResource(R.string.manage_row_home_helper)   // RFC-HELPER-1 (test build)
+                tv.ownHome -> stringResource(R.string.manage_row_home_own)
+                tv.homeInstalledNotInUse -> stringResource(R.string.manage_row_home_not_in_use)
+                else -> tv.dockNames.joinToString(", ").ifEmpty { null }
+            }
+            val prayerLine = if (tv.prayer.on) msg(R.string.dash_prayer_on, "zone" to tv.prayer.zone,
+                "azan" to stringResource(if (tv.prayer.azan) R.string.dash_azan_on else R.string.dash_azan_off)) else stringResource(R.string.dash_prayer_off)
+            DashGrid(listOf(
+                DashTileSpec(CytIcons.Home, stringResource(R.string.manage_row_home), homeLine) { onIntent(ManageIntent.Open(ManageSection.HOME_SCREEN)) },
+                DashTileSpec(CytIcons.Moon, stringResource(R.string.dash_prayer), prayerLine) { onIntent(ManageIntent.Open(ManageSection.PRAYER)) },
+                DashTileSpec(CytIcons.Ban, stringResource(R.string.dash_switched_off), msg(R.string.dash_switched_off_sub, "count" to tv.switchedOff)) {
+                    onIntent(ManageIntent.Open(ManageSection.SWITCHED_OFF)) },
+                DashTileSpec(CytIcons.Undo, stringResource(R.string.manage_row_restore), tv.restorePointAtMs?.let { shortDateTime(it, locale) }) {
+                    onIntent(ManageIntent.Open(ManageSection.RESTORE_POINT)) },
+            ), Modifier.padding(top = 12.dp))
+            ListGroup(Modifier.padding(top = 12.dp)) {
                 // STORES-PLAN 1: the Play build has no add-ons, so no row that leads to them.
                 // UX finding 9: without the new home screen a card shows as an app, and the row says so.
                 if (state.addOns) {
@@ -188,14 +206,8 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
                     ListRow(msg(R.string.manage_row_better_back_on, "count" to tv.betterBackOn), onClick = { onIntent(ManageIntent.Open(ManageSection.SWITCHED_OFF)) })
                     ListDivider()
                 }
-                ListRow(msg(R.string.manage_row_switched_off, "count" to tv.switchedOff), subtitle = stringResource(R.string.manage_row_switched_off_sub),
-                    onClick = { onIntent(ManageIntent.Open(ManageSection.SWITCHED_OFF)) })
-                ListDivider()
                 ListRow(stringResource(R.string.manage_row_leftovers), subtitle = stringResource(R.string.manage_row_leftovers_sub),
                     onClick = { onIntent(ManageIntent.Open(ManageSection.LEFTOVERS)) })
-                ListDivider()
-                ListRow(stringResource(R.string.manage_row_restore), subtitle = tv.restorePointAtMs?.let { msg(R.string.manage_row_restore_sub, "date" to shortDateTime(it, locale)) },
-                    onClick = { onIntent(ManageIntent.Open(ManageSection.RESTORE_POINT)) })
                 ListDivider()
                 ListRow(stringResource(R.string.manage_row_tvsettings), onClick = { onIntent(ManageIntent.Open(ManageSection.TV_SETTINGS)) })
             }
@@ -343,7 +355,20 @@ fun SwitchedOffScreen(state: SwitchedOffState, onIntent: (SwitchedOffIntent) -> 
         } else {
             Lead(stringResource(R.string.switchedoff_intro), Modifier.padding(top = 12.dp))
         }
-        state.groups.forEach { g ->
+        // Bloatless (mockup v4): a search box and one chip a group; both only narrow what is shown.
+        var query by rememberSaveable { mutableStateOf("") }
+        var only by rememberSaveable { mutableStateOf(ALL_GROUPS) }
+        val allRows = state.groups.sumOf { it.rows.size }
+        if (allRows > 6) {
+            CytTextField(query, { query = it }, stringResource(R.string.switchedoff_search), Modifier.padding(top = 16.dp))
+            val chips = listOf(ALL_GROUPS to stringResource(R.string.switchedoff_all)) +
+                state.groups.filter { it.id != OffGroup.BETTER_BACK_ON }.map { it.id to it.title.ifEmpty { stringResource(R.string.switchedoff_group_other) } }
+            if (chips.size > 2) FilterChips(chips, only, { only = it }, Modifier.padding(top = 10.dp))
+        }
+        val q = query.trim().lowercase()
+        fun OffRow.matches() = q.isEmpty() || name.lowercase().contains(q) || description.orEmpty().lowercase().contains(q) || pkg.value.contains(q)
+        state.groups.map { g -> g.copy(rows = g.rows.filter { it.matches() }) }
+            .filter { it.rows.isNotEmpty() && (only == ALL_GROUPS || it.id == only || it.id == OffGroup.BETTER_BACK_ON) }.forEach { g ->
             // WP4 (C6): "Better back on" at the top, each row with our reason and the ordinary PutBack.
             if (g.id == OffGroup.BETTER_BACK_ON) { BetterBackOnGroup(g, state.busy, onIntent); return@forEach }
             SectionLabel(g.title.ifEmpty { stringResource(R.string.switchedoff_group_other) })
@@ -578,3 +603,6 @@ internal fun ColumnScope.ConfirmContent(what: AppConfirm, working: Boolean, onIn
         TertiaryButton(stringResource(R.string.action_cancel), { onIntent(AppSettingsIntent.CancelConfirm) }, quiet = true)
     }
 }
+
+// Bloatless: the Switched off filter that shows every group.
+private const val ALL_GROUPS = "*"

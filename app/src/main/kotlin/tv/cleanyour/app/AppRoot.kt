@@ -88,7 +88,7 @@ import tv.cleanyour.feature.setup.SetupFlow
     @Serializable data class SwitchedOff(val tvId: String) : Dest
     @Serializable data class Leftovers(val tvId: String) : Dest
     // 0.4.8: `again`, from Done's "Not right? Send it again": the page sends the saved look once it has loaded.
-    @Serializable data class Home(val tvId: String, val again: Boolean = false) : Dest
+    @Serializable data class Home(val tvId: String, val again: Boolean = false, val prayer: Boolean = false) : Dest
     @Serializable data class Modules(val tvId: String) : Dest
     @Serializable data class Restore(val tvId: String) : Dest
     @Serializable data class TvSettings(val tvId: String) : Dest
@@ -119,6 +119,7 @@ internal fun applyRoute(stack: MutableList<NavKey>, route: String, noTvs: Boolea
         "resume" -> id?.let { t -> parts.getOrNull(2)?.let { p -> Dest.Setup(t, p) } }
         "modules" -> if (addOns) id?.let { Dest.Modules(it) } else null
         "home" -> if (id != null) Dest.Home(id, again = parts.getOrNull(2) == "again") else null
+        "prayer" -> if (id != null) Dest.Home(id, prayer = true) else null   // Bloatless
         "switchedoff" -> id?.let { Dest.SwitchedOff(it) }
         "leftovers" -> id?.let { Dest.Leftovers(it) }
         "restore" -> id?.let { Dest.Restore(it) }
@@ -319,7 +320,7 @@ fun AppRoot(graph: AppGraph, start: Dest, onExit: () -> Unit) {
                     val m = rememberMachine("home:${key.tvId}:${key.again}") { graph.homeScreen(it, TvId(key.tvId), key.again) }
                     val state by m.state.collectAsStateWithLifecycle()
                     LaunchedEffect(m) { m.effects.collect { onManageEffect(it) } }
-                    HomeScreen(state, m::dispatch, onBack = { go("back") }, photos = photoPicker, onReport = { lead ->
+                    HomeScreen(state, m::dispatch, onBack = { go("back") }, photos = photoPicker, openPrayer = key.prayer, onReport = { lead ->
                         go(IssueRoute.of(TvId(key.tvId), ReportContext("Home screen", ReportContext.named(lead, state.tvName), "HOME_BLOCKED_${state.notOnTv?.reason ?: "NONE"}")))
                     }, onOpenUrl = { url -> scope.launch { onManageEffect(ManageEffect.OpenUrl(url)) } })
                 }

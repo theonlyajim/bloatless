@@ -62,7 +62,7 @@ class PlannerTest {
         assertTrue(disables.all { it.onFailure == FailurePolicy.SKIP_IF_REFUSED && it.prior == Prior(packageState = EnabledState.ENABLED) })
         val tail = ops(p).drop(disables.size)
         assertEquals(
-            listOf("Settle", "InstallStream", "StartActivity", "Mkdir", "ArmHomeWatchdog", "Disable", "SetHome", "VerifyHome", "ConfirmHome", "KillWatchdog"),
+            listOf("Settle", "InstallStream", "AppOpAllow", "StartActivity", "Mkdir", "ArmHomeWatchdog", "Disable", "SetHome", "VerifyHome", "ConfirmHome", "KillWatchdog"),
             tail.map { it::class.simpleName },
         )
         val arm = p.find<Op.ArmHomeWatchdog>()
@@ -171,7 +171,7 @@ class PlannerTest {
         val snap = Samples.snapshot(facts = facts, packages = Samples.miTvPackages(emptySet())).withSettings(emptyMap())
         val p = plan(setup(choices = choices(takeover = false)), snapshot = snap)
         val tail = ops(p).dropWhile { it is Op.Disable }
-        assertEquals(listOf("Settle", "Mkdir", "PushAsset", "Install", "RemoveFile"), tail.map { it::class.simpleName })
+        assertEquals(listOf("Settle", "Mkdir", "PushAsset", "Install", "RemoveFile", "AppOpAllow"), tail.map { it::class.simpleName })
         val push = p.find<Op.PushAsset>(); val install = p.find<Op.Install>()
         assertEquals(RemoteDir.TMP, push.dest.dir); assertEquals(push.dest, install.apk)
         assertEquals(artifact().sha256, install.sha256); assertTrue(install.flags.isEmpty())

@@ -10,6 +10,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import tv.cleanyour.core.model.AppOpName
 import tv.cleanyour.core.model.BlobRef
 import tv.cleanyour.core.model.Component
 import tv.cleanyour.core.model.CurtainGroup
@@ -84,6 +85,7 @@ object OpJson {
             is Op.AccessibilityAdd -> { put("v", "accessibility_add"); if (op.expected != null) put("expected", op.expected); put("component", op.component.flat) }
             is Op.AccessibilityRemove -> { put("v", "accessibility_remove"); if (op.expected != null) put("expected", op.expected); put("component", op.component.flat); put("offIfEmpty", op.offIfEmpty) }
             is Op.ArmHelperWatchdog -> { put("v", "arm_helper_watchdog"); put("component", op.component.flat); put("seconds", op.seconds); put("token", op.token.value); put("offIfEmpty", op.offIfEmpty) }
+            is Op.AppOpAllow -> { put("v", "app_op_allow"); put("pkg", op.pkg.value); put("appOp", op.appOp.name) }
         }
     }
 
@@ -126,6 +128,7 @@ object OpJson {
         "accessibility_add" -> Op.AccessibilityAdd(o.optStr("expected"), component(o.str("component")))
         "accessibility_remove" -> Op.AccessibilityRemove(o.optStr("expected"), component(o.str("component")), o.bool("offIfEmpty"))
         "arm_helper_watchdog" -> Op.ArmHelperWatchdog(component(o.str("component")), o.int("seconds"), RunToken(o.str("token")), o.bool("offIfEmpty"))
+        "app_op_allow" -> Op.AppOpAllow(pkg(o.str("pkg")), AppOpName.valueOf(o.str("appOp")))
         else -> throw IllegalArgumentException("unknown op verb $v")
     }
 

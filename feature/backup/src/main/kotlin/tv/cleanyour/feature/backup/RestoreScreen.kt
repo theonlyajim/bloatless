@@ -25,6 +25,8 @@ import tv.cleanyour.core.flows.RestorePhase
 import tv.cleanyour.core.flows.RestorePointIntent
 import tv.cleanyour.core.flows.RestorePointState
 import tv.cleanyour.core.flows.UndoPreview
+import tv.cleanyour.ui.design.icon.CytIcons
+import tv.cleanyour.ui.design.component.HeroCard
 import tv.cleanyour.ui.design.component.ActionColumn
 import tv.cleanyour.ui.design.component.Banner
 import tv.cleanyour.ui.design.component.BannerTone
@@ -90,6 +92,8 @@ fun RestoreScreen(state: RestorePointState, onIntent: (RestorePointIntent) -> Un
             else -> {}
         }
         Lead(if (baseline != null) msg(R.string.restore_current, "date" to baseline) else stringResource(R.string.restore_none), Modifier.padding(top = 12.dp))
+        // Bloatless (mockup v4): what a restore point means, before the rows.
+        if (baseline != null) HeroCard(CytIcons.Shield, stringResource(R.string.restore_safe_title), stringResource(R.string.restore_safe_body), Modifier.padding(top = 16.dp))
         ListGroup(Modifier.padding(top = 20.dp, bottom = 24.dp)) {
             ListRow(stringResource(R.string.restore_row_undo), subtitle = baseline?.let { msg(R.string.restore_row_undo_sub, "date" to it) },
                 onClick = if (baseline != null) ({ onIntent(RestorePointIntent.PreviewUndo) }) else null)

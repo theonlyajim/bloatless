@@ -80,11 +80,13 @@ import tv.cleanyour.ui.design.component.toTvLook
 // 0.4.7: `onOpenUrl` opens the TV list page from the not-on-this-TV screen (the browser opens it).
 fun HomeScreen(
     state: HomeScreenState, onIntent: (HomeScreenIntent) -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier, photos: PhotoPicker? = null,
-    onReport: (String) -> Unit = {}, onOpenUrl: (String) -> Unit = {},
+    onReport: (String) -> Unit = {}, onOpenUrl: (String) -> Unit = {}, openPrayer: Boolean = false,
 ) {
     val notOnTv = state.notOnTv
     if (notOnTv != null) { NotOnTvScreen(state.tvName, notOnTv, onIntent, onBack, modifier, onReport, onOpenUrl); return }
     var dockOpen by rememberSaveable { mutableStateOf(false) }
+    var prayerOpen by rememberSaveable { mutableStateOf(openPrayer) }
+    var placesOpen by rememberSaveable { mutableStateOf(false) }
     val busy = state.busy
     ScreenScaffold(Glow.Tv, modifier, topBar = { CytTopBar(onBack = onBack) }) {
         ScreenTitle(stringResource(R.string.home_title), Modifier.padding(top = 20.dp))
@@ -114,6 +116,17 @@ fun HomeScreen(
                     guardObscured = true)
             }
         }
+        // Bloatless (mockup v4): what the TV shows now as a big preview, and one button into the look editor.
+        if (state.lookShot == null || busy != null) {
+            state.sent?.let { p ->
+                Box(Modifier.padding(top = 16.dp).fillMaxWidth().clearAndSetSemantics {}) {
+                    TvPreview(p.toTvLook(lookPicture(p.picturePath, sample = 4)), "", Modifier.fillMaxWidth())
+                }
+            }
+        }
+        if (busy == null && state.notOnTv == null) {
+            PrimaryButton(stringResource(R.string.home_change_look), { onIntent(HomeScreenIntent.OpenLook) }, Modifier.padding(top = 16.dp), guardObscured = false)
+        }
         ListGroup(Modifier.padding(top = 20.dp)) {
             // The dock's apps by name, and how many more sit in the rows under it.
             val inDock = state.dock.take(state.columns).joinToString(", ") { it.name }
@@ -123,6 +136,17 @@ fun HomeScreen(
                 onClick = if (busy == null) ({ dockOpen = true }) else null)
             ListDivider()
             LookRow(state, onClick = if (busy == null) ({ onIntent(HomeScreenIntent.OpenLook) }) else null)
+        }
+        // Bloatless: JAKIM prayer times on Home and the azan.
+        ListGroup(Modifier.padding(top = 12.dp)) {
+            val p = state.prayer
+            val sub = if (!p.on) stringResource(R.string.prayer_row_off)
+                else stringResource(R.string.prayer_row_on, p.zone, stringResource(if (p.azan) R.string.prayer_row_azan_on else R.string.prayer_row_azan_off))
+            ListRow(stringResource(R.string.prayer_row), subtitle = sub, onClick = if (busy == null) ({ prayerOpen = true }) else null)
+            ListDivider()
+            val pl = state.places
+            ListRow(stringResource(R.string.places_title), subtitle = if (pl.on) intervalName(pl.minutes) else stringResource(R.string.prayer_row_off),
+                onClick = if (busy == null) ({ placesOpen = true }) else null)
         }
         // look2: a failed look send keeps the draft (and a new photo); Open Look reopens it.
         if (state.lookFailed && busy == null) {
@@ -157,6 +181,12 @@ fun HomeScreen(
                     onClick = if (busy == null) ({ onIntent(HomeScreenIntent.PreviewStock) }) else null)
             }
         }
+    }
+    if (placesOpen) {
+        WallpaperSheet(state.places, onSave = { onIntent(HomeScreenIntent.SetPlaces(it)); placesOpen = false }, onDismiss = { placesOpen = false })
+    }
+    if (prayerOpen) {
+        PrayerSheet(state.prayer, onSave = { onIntent(HomeScreenIntent.SetPrayer(it)); prayerOpen = false }, onDismiss = { prayerOpen = false })
     }
     if (dockOpen) {
         DockSheet(state.dock, state.apps, state.columns, onDone = { onIntent(HomeScreenIntent.SetDock(it)); dockOpen = false }, onDismiss = { dockOpen = false },

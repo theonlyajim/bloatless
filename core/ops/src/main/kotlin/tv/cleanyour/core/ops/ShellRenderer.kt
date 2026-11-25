@@ -152,6 +152,10 @@ class ShellRenderer(private val watchdogVariant: WatchdogVariant = WatchdogVaria
             } else HelperLines.tvRemove(op.component, op.offIfEmpty)
             Rendered(op, lines(ShellLine(text)), null, Privilege.PROFILE_STEP, Op.Read(ProbeKind.SETTINGS, ReadArg.Ns(SettingsNs.SECURE)), T_DEFAULT, CAP_DEFAULT)
         }
+        is Op.AppOpAllow -> {
+            require(op.pkg.value == LAUNCHER_PACKAGE) { "app-ops are set for $LAUNCHER_PACKAGE only" }
+            Rendered(op, lines(line("appops", "set", pkg(op.pkg), op.appOp.name, "allow")), null, Privilege.COMMUNITY, null, T_DEFAULT, CAP_DEFAULT)
+        }
         is Op.ArmHelperWatchdog -> {
             val text = HelperLines.watchdog(watchdogVariant, op.component, op.seconds, op.token, op.offIfEmpty)
             Rendered(op, listOf(line("rm", "-f", tokenFile(op.token).absolute), ShellLine(text)), null, Privilege.TAKEOVER,
@@ -245,6 +249,7 @@ class ShellRenderer(private val watchdogVariant: WatchdogVariant = WatchdogVaria
         is Op.AccessibilityAdd -> Op.AccessibilityRemove(null, op.component)
         is Op.ArmHelperWatchdog -> Op.KillWatchdog(op.token)
         is Op.AccessibilityRemove -> null
+        is Op.AppOpAllow -> null
         is Op.Uninstall, is Op.RemoveFile, is Op.RestartHome, is Op.StartActivity, is Op.Mkdir,
         is Op.ConfirmHome, is Op.KillWatchdog, is Op.VerifyHome, is Op.Read, is Op.Settle,
         Op.PressHome, Op.Reboot, Op.DebugOff, is Op.CurtainCue -> null
@@ -301,7 +306,7 @@ class ShellRenderer(private val watchdogVariant: WatchdogVariant = WatchdogVaria
             is Op.StartActivity -> if (!op.wait || ("Status: ok" in lines && lines.none { it.startsWith("Error") })) VerifyResult.Ok
                 else mismatch("Status: ok and no Error from am start -W")
             is Op.Mkdir, is Op.RestartHome, is Op.Read, is Op.Settle,
-            Op.PressHome, Op.Reboot, Op.DebugOff, is Op.CurtainCue -> VerifyResult.Ok
+            Op.PressHome, Op.Reboot, Op.DebugOff, is Op.CurtainCue, is Op.AppOpAllow -> VerifyResult.Ok
         }
     }
 
@@ -379,6 +384,8 @@ class ShellRenderer(private val watchdogVariant: WatchdogVariant = WatchdogVaria
         private val PID_RE = Regex("^[0-9]{1,10}$")
         // RFC-CURTAIN-1: the curtain's package, its cue action and the extra flags of am.
         const val CURTAIN_PACKAGE = "tv.cleanyour.curtain"
+        // Bloatless: the one package AppOpAllow may name (the bundled home screen).
+        const val LAUNCHER_PACKAGE = "com.gathin.tvhome"
         const val CUE_ACTION = "tv.cleanyour.curtain.CUE"
         const val CUE_MAX = 999
         private const val ES = "--es"

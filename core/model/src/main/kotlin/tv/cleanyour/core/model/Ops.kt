@@ -72,6 +72,13 @@ sealed interface Op {
     // phone does not defuse it, it takes `component` out of the list itself (offIfEmpty as above).
     data class AccessibilityAdd(val expected: String?, val component: Component) : Op
     data class AccessibilityRemove(val expected: String?, val component: Component, val offIfEmpty: Boolean = false) : Op
-    data class ArmHelperWatchdog(val component: Component, val seconds: Int, val token: RunToken, val offIfEmpty: Boolean) : Op }
+    data class ArmHelperWatchdog(val component: Component, val seconds: Int, val token: RunToken, val offIfEmpty: Boolean) : Op
+    // Bloatless: `appops set <pkg> <op> allow` for our own home screen, so the azan can open over the
+    // app on screen (SYSTEM_ALERT_WINDOW). The app-op name is an enum, never data; not undone (the
+    // grant goes with the app when it is uninstalled).
+    data class AppOpAllow(val pkg: PackageName, val appOp: AppOpName) : Op }
+
+// Bloatless: the app-ops AppOpAllow may set.
+enum class AppOpName { SYSTEM_ALERT_WINDOW }
 
 data class ChangeRecord(val planId: PlanId, val step: Int, val op: Op, val prior: Prior?, val atMs: Long)   // R0: 1 derived from journals, for undo and restore files

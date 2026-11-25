@@ -155,6 +155,8 @@ class FakeShell(private val tv: FakeTv, private val faults: Faults) {
             "settings" -> settings(argv.drop(1))
             "am" -> am(argv.drop(1))
             "input" -> input(argv.drop(1))
+            // Bloatless: `appops set PKG OP allow` (AppOpAllow) answers as a TV does, with nothing.
+            "appops" -> ExecOutcome("")
             "dumpsys" -> dumpsys(argv.drop(1))
             "echo" -> ExecOutcome(argv.drop(1).joinToString(" ") + "\n")
             "cat" -> cat(argv.drop(1))

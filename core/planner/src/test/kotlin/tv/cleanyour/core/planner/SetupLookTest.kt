@@ -42,7 +42,7 @@ class SetupLookTest {
         val without = plan(setup(), planner = planner())
         val tail = p.steps.dropWhile { it.op is Op.Disable }
         assertEquals(
-            listOf("Settle", "InstallStream", "StartActivity", "Mkdir", "PushAsset", "PushAsset", "RestartHome",
+            listOf("Settle", "InstallStream", "AppOpAllow", "StartActivity", "Mkdir", "PushAsset", "PushAsset", "RestartHome",
                 "StartActivity", "Mkdir", "ArmHomeWatchdog", "Disable", "SetHome", "VerifyHome", "ConfirmHome", "KillWatchdog"),
             names(tail),
         )

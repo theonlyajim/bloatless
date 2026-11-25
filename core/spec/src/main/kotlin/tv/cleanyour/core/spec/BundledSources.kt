@@ -173,7 +173,19 @@ class BundledThemeSource : ThemeSource, PictureSource {
         private class GalleryEntry(val id: String, val name: String, val path: String, val background: Int, val until: LocalDate? = null,
             val festival: String? = null, val accent: String? = null, val sky: Int = 0)
 
+        // Bloatless: the Malaysian pictures, drawn by tools/malaysia-pictures/draw.swift (no outside art), first in
+        // the gallery. Raya, Ramadan and Merdeka are dated like Diwali: offered up to the end of their season.
+        private const val MY = "$PICTURES/malaysia"
         private val galleryEntries = listOf(
+            GalleryEntry("my-raya", "Raya", "$MY/raya.jpg", 0xFF06180E.toInt(), until = LocalDate.of(2027, 4, 8)),
+            GalleryEntry("my-ramadan", "Ramadan", "$MY/ramadan.jpg", 0xFF04161C.toInt(), until = LocalDate.of(2027, 3, 9)),
+            GalleryEntry("my-merdeka", "Merdeka", "$MY/merdeka.jpg", 0xFF05070F.toInt(), until = LocalDate.of(2027, 9, 16)),
+            GalleryEntry("my-kampung", "Kampung", "$MY/kampung.jpg", 0xFF120C18.toInt()),
+            GalleryEntry("my-masjid", "Mosque at night", "$MY/masjid.jpg", 0xFF040814.toInt()),
+            GalleryEntry("my-pantai", "East coast", "$MY/pantai.jpg", 0xFF0B1D2E.toInt()),
+            GalleryEntry("my-batik", "Batik", "$MY/batik.jpg", 0xFF0A0820.toInt()),
+            GalleryEntry("my-songket", "Songket", "$MY/songket.jpg", 0xFF2A050B.toInt()),
+            GalleryEntry("my-tanah-tinggi", "Tea hills", "$MY/tanah-tinggi.jpg", 0xFF1C4128.toInt()),
             GalleryEntry("diwali", "Diwali", "$LOOKS/diwali/wallpaper.jpg", 0xFF120809.toInt(), until = LocalDate.of(2026, 11, 10),
                 festival = "diwali", accent = "#FFB23C"),
             GalleryEntry("aurora", "Aurora", "$THEMES/aurora/wallpaper.jpg", 0xFF070A14.toInt()),

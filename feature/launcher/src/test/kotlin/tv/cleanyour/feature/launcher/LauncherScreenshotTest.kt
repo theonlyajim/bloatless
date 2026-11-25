@@ -221,7 +221,7 @@ object LauncherShots {
             LookShot(lookSheet(LookFixtures.draft(picture = LookEditorState.MINE)) { it.copy(ownPicture = LookFixtures.gallery.getValue("aurora").wallpaper.let { w ->
                 w.copy(path = LookFixtures.resourcePath(w)!!) }) })
         },
-        Shot("look_style_snackbar", 1100.dp) {
+        Shot("look_style_snackbar", 1230.dp) {   // Bloatless: tall enough that no control sits half under the snackbar
             LookShot(lookSheet(LookFixtures.draft(StyleId.SPOTLIGHT, changed = true, wayBack = WayBack.UNDO,
                 note = LookNote(1, LookNoteKind.STYLE_CHANGED, StyleId.SPOTLIGHT, own = listOf(DetailWord.BUTTONS, DetailWord.GLOW), dropped = listOf(DetailWord.DOCK_BAND), action = true))))
         },

@@ -25,7 +25,8 @@ class LookDraftBytesTest {
     // Choices across every style, picture, apps in a row, dock size and a spread of details and
     // movement, on three TVs that read the 3.0 keys (versionCode 9, not known, and 9 with 1 GB).
     private fun inputs(): Sequence<Pair<String, ByteArray>> = sequence {
-        val pictures = listOf(LookPicture.NONE_ID, LookPicture.MINE_ID) + looks.pictures().map { it.id }
+        // Bloatless: only the 0.4.0 gallery; the Malaysian pictures ("my-") came later and have no 0.4.0 bytes.
+        val pictures = listOf(LookPicture.NONE_ID, LookPicture.MINE_ID) + looks.pictures().map { it.id }.filterNot { it.startsWith("my-") }
         val details = buildList {
             for (glow in listOf(null) + GlowChoice.entries) for (band in listOf<Pair<BandChoice?, Int?>>(null to null, BandChoice.SOLID to null,
                 BandChoice.SEE_THROUGH to 30, BandChoice.SEE_THROUGH to 70, BandChoice.GLASS to null)) for (buttons in listOf(null) + ButtonsChoice.entries)

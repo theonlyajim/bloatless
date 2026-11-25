@@ -91,6 +91,10 @@ class GuardedActionsTest {
 
         // Look
         compose.onAllNodesWithText("Put it on the TV").assertCountEquals(1)
+        // Bloatless: the picture grid shows two rows first; "Show all" only opens the rest, it sends no edit.
+        if (compose.onAllNodesWithText("Show all", substring = true).fetchSemanticsNodes().isNotEmpty()) {
+            compose.tap(compose.onNodeWithText("Show all", substring = true).inView(), OBSCURED)
+        }
         tapText("Aurora")
         tapLabel("Glass. A frosted dock and light in each app's colour.")
         tapLabel("6 apps in a row")

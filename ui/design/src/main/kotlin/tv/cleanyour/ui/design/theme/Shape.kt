@@ -13,7 +13,7 @@ data class CytShapes(
     val pill: RoundedCornerShape = RoundedCornerShape(percent = 50),
     val small: RoundedCornerShape = RoundedCornerShape(12.dp),
     val row: RoundedCornerShape = RoundedCornerShape(16.dp),
-    val medium: RoundedCornerShape = RoundedCornerShape(20.dp),
+    val medium: RoundedCornerShape = RoundedCornerShape(16.dp),   // Bloatless: the mockup's 16 dp cards
     val large: RoundedCornerShape = RoundedCornerShape(28.dp),
     val sheet: RoundedCornerShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
 )

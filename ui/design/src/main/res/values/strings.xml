@@ -371,4 +371,6 @@
     <string name="cyt_address_field_label">TV address</string>
     <string name="cyt_address_error">That isn\'t an address on your home network</string>
     <string name="cyt_address_connect">Connect</string>
+    <!-- Bloatless: the picture grid shows two rows first. -->
+    <string name="picker_show_all">Show all (%1$d)</string>
 </resources>

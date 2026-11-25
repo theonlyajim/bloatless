@@ -24,7 +24,7 @@
     <string name="gate_failed">We couldn\'t confirm it\'s you, so nothing was changed.</string>
 
     <!-- M1 Manage -->
-    <string name="manage_title" translatable="false">Clean Your TV</string>
+    <string name="manage_title" translatable="false">Bloatless</string>
     <string name="manage_settings_cd">App settings</string>
     <string name="manage_tv_title">{tv}, {room}</string>
     <string name="manage_tv_title_noroom">{tv}</string>
@@ -214,7 +214,7 @@
     <string name="appsettings_up_to_date">You have the latest version</string>
     <string name="appsettings_update_error">Couldn\'t check for updates</string>
     <string name="appsettings_licences">Licences</string>
-    <string name="appsettings_licence_app">Clean Your TV: MIT</string>
+    <string name="appsettings_licence_app">Bloatless by Ajim: MIT, based on Clean Your TV (MIT)</string>
     <string name="appsettings_licence_font">Outfit typeface: SIL Open Font Licence 1.1</string>
     <string name="appsettings_licence_apache">dadb and Shizuku code we adapted: Apache-2.0 notices</string>
     <string name="appsettings_licence_pictures">Look pictures: our own work, CC0 1.0 (public domain); Aurora, Glass and Autumn lake (Ruska) from the Clean Your TV launcher, MIT</string>
@@ -289,4 +289,18 @@
     <string name="report_issue_error">That isn\'t a link to an issue of this app on GitHub.</string>
     <string name="report_issue_save">Remember it</string>
     <string name="report_issue_open">Open the issue</string>
+    <!-- Bloatless: the main screen (mockup v4). -->
+    <string name="dash_by">by Ajim</string>
+    <string name="dash_stat_off">switched off</string>
+    <string name="dash_stat_dock">in the dock</string>
+    <string name="dash_stat_restore">restore point</string>
+    <string name="dash_prayer">Prayer times</string>
+    <string name="dash_prayer_off">Off</string>
+    <string name="dash_prayer_on">{zone} · {azan}</string>
+    <string name="dash_azan_on">azan on</string>
+    <string name="dash_azan_off">azan off</string>
+    <string name="dash_switched_off">Switched off</string>
+    <string name="dash_switched_off_sub">{count, plural, one {# app} other {# apps}}</string>
+    <string name="switchedoff_search">Search apps</string>
+    <string name="switchedoff_all">All</string>
 </resources>

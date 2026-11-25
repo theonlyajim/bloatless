@@ -1,5 +1,6 @@
 package tv.cleanyour.core.planner
 
+import tv.cleanyour.core.model.AppOpName
 import tv.cleanyour.core.model.BlobRef
 import tv.cleanyour.core.model.ChangeRecord
 import tv.cleanyour.core.model.Component
@@ -505,6 +506,9 @@ class DefaultPlanner(
             }
             installApk(artifact.blob, artifact.sha256, artifact.pkg, artifact.versionCode, artifact.signer,
                 present = present && !replacesLauncher, group = GROUP_LAUNCHER, narration = "Installing the new home screen")
+            // Bloatless: the azan opens over the app on screen only with this app-op (Android 10 and later stop a
+            // background app's activity otherwise). A TV that refuses it still gets everything else.
+            step(Op.AppOpAllow(artifact.pkg, AppOpName.SYSTEM_ALERT_WINDOW), null, GROUP_LAUNCHER, "", FailurePolicy.CONTINUE)
             return true
         }
 

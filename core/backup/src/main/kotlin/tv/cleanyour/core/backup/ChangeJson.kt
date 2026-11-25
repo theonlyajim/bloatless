@@ -14,6 +14,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
+import tv.cleanyour.core.model.AppOpName
 import tv.cleanyour.core.model.BlobRef
 import tv.cleanyour.core.model.ChangeRecord
 import tv.cleanyour.core.model.Component
@@ -117,6 +118,7 @@ object ChangeJson {
             is Op.AccessibilityAdd -> { put("expected", op.expected); put("component", op.component.flat) }
             is Op.AccessibilityRemove -> { put("expected", op.expected); put("component", op.component.flat); put("offIfEmpty", op.offIfEmpty) }
             is Op.ArmHelperWatchdog -> { put("component", op.component.flat); put("seconds", op.seconds); put("token", op.token.value); put("offIfEmpty", op.offIfEmpty) }
+            is Op.AppOpAllow -> { put("pkg", op.pkg.value); put("appOp", op.appOp.name) }
         }
     }
 
@@ -151,6 +153,7 @@ object ChangeJson {
         "accessibility_add" -> Op.AccessibilityAdd(o.strOrNull("expected"), component(o.str("component")))
         "accessibility_remove" -> Op.AccessibilityRemove(o.strOrNull("expected"), component(o.str("component")), o.bool("offIfEmpty"))
         "arm_helper_watchdog" -> Op.ArmHelperWatchdog(component(o.str("component")), o.int("seconds"), RunToken(o.str("token")), o.bool("offIfEmpty"))
+        "app_op_allow" -> Op.AppOpAllow(PackageName(o.str("pkg")), AppOpName.valueOf(o.str("appOp")))
         else -> throw IllegalArgumentException("unknown op type $type")
     }
 
@@ -183,6 +186,7 @@ object ChangeJson {
         is Op.AccessibilityAdd -> "accessibility_add"
         is Op.AccessibilityRemove -> "accessibility_remove"
         is Op.ArmHelperWatchdog -> "arm_helper_watchdog"
+        is Op.AppOpAllow -> "app_op_allow"
     }
 
     fun prior(p: Prior): JsonObject = buildJsonObject {

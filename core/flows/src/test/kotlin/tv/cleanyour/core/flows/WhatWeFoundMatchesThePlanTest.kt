@@ -169,7 +169,7 @@ class WhatWeFoundMatchesThePlanTest {
         val steps = body(plan)
         val tail = steps.drop(steps.indexOfFirst { it.op is Op.Settle })
         assertEquals(
-            listOf("Settle", "InstallStream", "StartActivity", "Mkdir", "PushAsset", "RemoveFile", "RestartHome",
+            listOf("Settle", "InstallStream", "AppOpAllow", "StartActivity", "Mkdir", "PushAsset", "RemoveFile", "RestartHome",
                 "StartActivity", "Mkdir", "ArmHomeWatchdog", "Disable", "SetHome", "VerifyHome", "ConfirmHome", "KillWatchdog"),
             tail.map { it.op::class.simpleName },
         )
@@ -181,7 +181,7 @@ class WhatWeFoundMatchesThePlanTest {
         assertEquals(cleaning.indices.map { if (it % 2 == 0) "Disable" else "OFF" }, cleaning, "one OFF cue after each switch-off")
         assertEquals(plan.summary.groups.count { g -> g.id != DefaultPlanner.GROUP_HOME && g.off > 0 }, curtainOrder.count { it == "GROUP_DONE" })
         val end = curtainOrder.drop(curtainOrder.indexOf("Settle"))
-        assertEquals(listOf("Settle", "INSTALL", "InstallStream", "INSTALLED", "FINALE", "Settle", "StartActivity", "Mkdir", "PushAsset", "RemoveFile", "RestartHome",
+        assertEquals(listOf("Settle", "INSTALL", "InstallStream", "INSTALLED", "AppOpAllow", "FINALE", "Settle", "StartActivity", "Mkdir", "PushAsset", "RemoveFile", "RestartHome",
             "StartActivity", "Mkdir", "ArmHomeWatchdog", "Disable", "SetHome", "VerifyHome", "ConfirmHome", "KillWatchdog", "Uninstall"), end)
     }
 
@@ -252,15 +252,15 @@ class WhatWeFoundMatchesThePlanTest {
         // nine around them: the curtain's install and start, SCAN and RESTORE_SAVED (nothing to
         // switch off outside the switch), INSTALL and INSTALLED, FINALE and its settle before the
         // launcher's first start, and the curtain's removal last.
-        assertEquals(14, body(plan).size)
+        assertEquals(15, body(plan).size)   // Bloatless: + AppOpAllow after the launcher install
         assertEquals(
-            listOf("InstallStream", "StartActivity", "Mkdir", "PushAsset", "RemoveFile", "RestartHome",
+            listOf("InstallStream", "AppOpAllow", "StartActivity", "Mkdir", "PushAsset", "RemoveFile", "RestartHome",
                 "StartActivity", "Mkdir", "ArmHomeWatchdog", "Disable", "SetHome", "VerifyHome", "ConfirmHome", "KillWatchdog"),
             body(plan).map { it.op::class.simpleName },
         )
-        assertEquals(23, plan.steps.size)
+        assertEquals(24, plan.steps.size)
         assertEquals(
-            listOf("InstallStream", "StartActivity", "SCAN 0/0", "RESTORE_SAVED 0/0", "INSTALL 0/0", "InstallStream", "INSTALLED 0/0", "FINALE 0/0", "Settle",
+            listOf("InstallStream", "StartActivity", "SCAN 0/0", "RESTORE_SAVED 0/0", "INSTALL 0/0", "InstallStream", "INSTALLED 0/0", "AppOpAllow", "FINALE 0/0", "Settle",
                 "StartActivity", "Mkdir", "PushAsset", "RemoveFile", "RestartHome",
                 "StartActivity", "Mkdir", "ArmHomeWatchdog", "Disable", "SetHome", "VerifyHome", "ConfirmHome", "KillWatchdog", "Uninstall"),
             plan.steps.map { s -> (s.op as? Op.CurtainCue)?.let { "${it.stage} ${it.count}/${it.total}" } ?: s.op::class.simpleName },

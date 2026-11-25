@@ -65,7 +65,7 @@ class CurtainPlanTest {
         val p = plan(withCurtain(), planner = planner())
         assertEquals(
             head() + cleaning("OTHER") + listOf(
-                "Settle", "cue INSTALL 0/0", "InstallStream com.gathin.tvhome", "cue INSTALLED 0/0", "cue FINALE 0/0", "Settle",
+                "Settle", "cue INSTALL 0/0", "InstallStream com.gathin.tvhome", "cue INSTALLED 0/0", "AppOpAllow", "cue FINALE 0/0", "Settle",
                 "start com.gathin.tvhome/.MainActivity wait", "Mkdir", "ArmHomeWatchdog", "Disable com.google.android.tvlauncher",
                 "SetHome", "VerifyHome", "ConfirmHome", "KillWatchdog", "Uninstall tv.cleanyour.curtain",
             ),
@@ -160,7 +160,7 @@ class CurtainPlanTest {
     // No takeover and no look: FINALE is the last cue, then the settle, then the removal.
     @Test fun noTakeoverEndsWithTheFinale() {
         val p = plan(withCurtain(setup(choices = choices(takeover = false))), planner = planner())
-        assertEquals(listOf("cue INSTALLED 0/0", "cue FINALE 0/0", "Settle", "Uninstall tv.cleanyour.curtain"), p.steps.takeLast(4).map(::label))
+        assertEquals(listOf("cue INSTALLED 0/0", "AppOpAllow", "cue FINALE 0/0", "Settle", "Uninstall tv.cleanyour.curtain"), p.steps.takeLast(5).map(::label))
         assertTrue(p.sections.isEmpty())
         val debloatOnly = plan(withCurtain(setup(choices = choices(takeover = false, installLauncher = false))), planner = planner())
         assertTrue(debloatOnly.steps.none { (it.op as? Op.CurtainCue)?.stage == CurtainStage.INSTALL })

@@ -3,6 +3,8 @@ package tv.cleanyour.core.flows
 import tv.cleanyour.core.model.TvId
 import tv.cleanyour.core.spec.LauncherConfigDoc
 import tv.cleanyour.core.spec.LiveTvKeys
+import tv.cleanyour.core.spec.PlacesKeys
+import tv.cleanyour.core.spec.PrayerKeys
 
 // What a Manage push adds to a look's doc on this TV, after the look itself: the Home button
 // helper's keys it keeps (HomeHelperFlows.carry), then the TV's Live TV app and no placed app hidden
@@ -15,6 +17,10 @@ internal object LookCarry {
         val snap = attempt { d.snapshots.latest(tvId) }.getOrNull()
         val profile = d.tv(tvId)?.let { attempt { d.profileOf(it) }.getOrNull() }
         val liveTv = snap?.let { LiveTvKeys.pick(profile, it.packages) }
-        return { doc -> LiveTvKeys.apply(helper(doc), liveTv) }
+        // Bloatless: this TV's prayer times choice (PrayerPrefs), on every send.
+        val prayer = attempt { PrayerPrefs(d.documents).load(tvId) }.getOrNull()
+        val places = attempt { WallpaperPrefs(d.documents).load(tvId) }.getOrNull()   // and the changing wallpaper
+        return { doc -> LiveTvKeys.apply(helper(doc), liveTv).let { if (prayer == null) it else PrayerKeys.apply(it, prayer) }
+            .let { if (places == null) it else PlacesKeys.apply(it, places) } }
     }
 }

@@ -64,7 +64,8 @@ class ThemeWallpaperTest {
         assertEquals(files.size + 1, blobs.puts.get())
         val pictures = source.pictures()
         // look2: the gallery of every look's picture (spec 6.2), Diwali first while it is offered.
-        assertEquals(listOf("diwali", "aurora", "mist", "glass", "ruska", "curtains", "mountains", "lamp", "neon", "cobalt"), pictures.map { it.id })
+        assertEquals(listOf("my-raya", "my-ramadan", "my-merdeka", "my-kampung", "my-masjid", "my-pantai", "my-batik", "my-songket", "my-tanah-tinggi",
+            "diwali", "aurora", "mist", "glass", "ruska", "curtains", "mountains", "lamp", "neon", "cobalt"), pictures.map { it.id })   // Bloatless: Malaysian pictures first
         assertTrue(pictures.all { File(it.wallpaper.path).isFile && it.wallpaper.size in 1..300_000 })
     }
 

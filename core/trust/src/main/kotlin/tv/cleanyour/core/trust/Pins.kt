@@ -30,12 +30,13 @@ object PinnedLauncher {
     const val ASSET_NAME = "cleanyourtv-launcher.apk"
     const val UPSTREAM_COMMIT = "b06ab21105c49900cb1ed76b24414dba1e21d0db"
     const val PACKAGE = "com.gathin.tvhome"
-    const val VERSION_CODE = 9L
-    const val VERSION_NAME = "3.0"
-    const val SIZE = 540_541L
-    const val SHA256 = "9fcc21c0eb81548c2432b3bf89c1d9c6b6ad17dcf7f7fc2e8d90d7ccbea7d60e"
-    // SHA-256 of the signing certificate (DER), "O=cleanyourtv, CN=Clean Your TV launcher", v2 and v3.
-    const val SIGNER_SHA256 = "576418154bec6505bfc709ccaa6ae85b6e09d98eb89f4a25147ca1b4b0505132"
+    const val VERSION_CODE = 11L
+    const val VERSION_NAME = "3.0.2"
+    const val SIZE = 1_523_637L
+    const val SHA256 = "d42235dfa316720db21e1ab43771924e2837d04aa97d4b4f1a3316e8ec5a4329"
+    // Bloatless: launcher 3.0.2 = upstream 3.0 plus JAKIM prayer times, the azan and the week's places, built from tv/launcher.
+    // Signed with the Android debug key for now (CN=Android Debug); a Bloatless release key replaces it before release.
+    const val SIGNER_SHA256 = "b66cbe08b17a834dd145822109d5be0981b4fc077efe5a177ef3d6f3e455b724"
 }
 
 // The TV curtain bundled in the phone app (RFC-CURTAIN-1): module :tv:curtain of this repo, built
@@ -49,8 +50,9 @@ object PinnedCurtain {
     const val RECEIVER = ".CueReceiver"
     const val VERSION_CODE = 1L
     const val VERSION_NAME = "0.1"
-    const val SIZE = 65_955L
-    const val SHA256 = "eb21e112c97121a3ed7f4db1c7fbf2169bc172a14bb3f8ca781079de4651662e"
+    // Bloatless: the upstream curtain 0.1 re-signed with the launcher's key (zipalign + apksigner, v2/v3).
+    const val SIZE = 61_859L
+    const val SHA256 = "ae3809fbc307d874b57e7f038fb8ce2366efc8b75e08b7a2b68d99b04955d2be"
     const val SIGNER_SHA256 = PinnedLauncher.SIGNER_SHA256
 }
 

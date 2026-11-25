@@ -226,6 +226,7 @@ class ScriptedTv(initial: Snapshot = Samples.miTvSnapshot()) : TvSession {
             line.startsWith("am start ") || line.startsWith("am force-stop ") -> ok("Starting: Intent\n")
             line.startsWith("am broadcast ") -> ok("Broadcasting: Intent { act=${tokens[4]} }\nBroadcast completed: result=0\n")
             line == "input keyevent 3" -> { onHomeKey(); ok() }
+            line.startsWith("appops set ") -> ok()   // Bloatless: AppOpAllow
             line.startsWith("settings put ") -> { val key = SettingKey.entries.first { it.key == tokens[3] }; settings[key] = tokens.drop(4).joinToString(" "); ok() }
             line.startsWith("settings delete ") -> { val key = SettingKey.entries.first { it.key == tokens[3] }; settings.remove(key); ok() }
             line.startsWith("settings list ") -> ok(settings.filter { it.key.ns.name.lowercase() == tokens[2] }.entries.joinToString("") { "${it.key.key}=${it.value}\n" })

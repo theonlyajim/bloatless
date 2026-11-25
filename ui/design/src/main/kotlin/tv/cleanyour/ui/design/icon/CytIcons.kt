@@ -54,10 +54,13 @@ object CytIcons {
     val Grip: ImageVector by lazy { icon("Grip", dot(9f, 6.5f), dot(15f, 6.5f), dot(9f, 12f), dot(15f, 12f), dot(9f, 17.5f), dot(15f, 17.5f), width = 2f) }
     val Circle: ImageVector by lazy { icon("Circle", "M12 6a6 6 0 1 1 0 12a6 6 0 1 1 0-12z") }
     val Dash: ImageVector by lazy { icon("Dash", "M8 12h8", width = 2f) }
+    // Bloatless: prayer times (a crescent) and a switched-off app (a circle struck through).
+    val Moon: ImageVector by lazy { icon("Moon", "M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z") }
+    val Ban: ImageVector by lazy { icon("Ban", CIRCLE9, "M5.6 5.6l12.8 12.8") }
 
     val all: List<ImageVector>
         get() = listOf(
-            Back, Close, Help, Check, ChevronForward, ChevronDown, ChevronUp, Info, Warning, Stopped, Shield,
+            Moon, Ban, Back, Close, Help, Check, ChevronForward, ChevronDown, ChevronUp, Info, Warning, Stopped, Shield,
             Wifi, WifiOff, Tv, Minus, Plus, Refresh, Copy, Settings, ArrowUp, ArrowDown, Search, Cards, Home,
             Undo, Restart, Key, Download, Phone, Delete, Share, Edit, Lock, External, Reorder, Grip, Circle, Dash,
         )

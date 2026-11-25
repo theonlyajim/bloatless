@@ -1,5 +1,7 @@
 package tv.cleanyour.core.flows
 
+import tv.cleanyour.core.spec.PlacesKeys
+import tv.cleanyour.core.spec.PrayerKeys
 import tv.cleanyour.core.planner.HomeHelper
 import tv.cleanyour.core.spec.HomeHelperKeys
 import kotlinx.coroutines.CoroutineScope
@@ -998,8 +1000,13 @@ class SetupMachine(
         lookContext = LookContext(apps = lookApps, others = candidates.filter { it.pkg !in kept }, mine = mine, new = new, tv = tvLook, cards = cards,
             keyNames = keyNames, dockChosen = draft.dock != null)
         val sheet = mutableExtras.value.look?.let { drafts.refresh(it, lookContext) } ?: drafts.open(choice, lookContext)
+        // Bloatless: a prayer times choice made in Manage stays when Setup runs again.
+        val prayer = deps.documents?.let { docs -> attempt { PrayerPrefs(docs).load(record.id) }.getOrNull() }
+        val places = deps.documents?.let { docs -> attempt { WallpaperPrefs(docs).load(record.id) }.getOrNull() }
         val look = if (!possible && !helper) null else attempt { val (doc, w) = drafts.docOf(sheet, dock, cards, lookContext)
-            Look.encode(deps.encoder, deps.blobs, LiveTvKeys.apply(if (helper) HomeHelperKeys.with(doc, helperStock!!.pkg) else doc, liveTv), w) }
+            val carried = LiveTvKeys.apply(if (helper) HomeHelperKeys.with(doc, helperStock!!.pkg) else doc, liveTv)
+            val withPrayer = if (prayer == null) carried else PrayerKeys.apply(carried, prayer)
+            Look.encode(deps.encoder, deps.blobs, if (places == null) withPrayer else PlacesKeys.apply(withPrayer, places), w) }
             .onFailure { deps.log.line("setup: the look could not be encoded, planned without it") }.getOrNull()
         // What Manage starts from once the run pushed it, saved as the Look sheet saves it, in the new
         // form: a photo made here is kept for the TV (and saved as "mine") only once the TV has it.

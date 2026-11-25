@@ -18,7 +18,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "cleanyourtv-app"
+rootProject.name = "bloatless"
 
 // Every module of the module graph (ARCHITECTURE 1.2 and PRODUCT-SPEC 6). Layers and allowed
 // edges live in build-logic ModuleRules.kt and are enforced by checkModuleGraph.

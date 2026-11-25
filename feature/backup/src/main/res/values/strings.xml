@@ -72,4 +72,7 @@
     <string name="restore_export_saved">Saved a copy of the restore point.</string>
     <string name="restore_export_failed">We couldn\'t save the copy. Try another place.</string>
 
+    <!-- Bloatless: the restore point's card (mockup v4). -->
+    <string name="restore_safe_title">Your TV is safe</string>
+    <string name="restore_safe_body">Everything Bloatless changed can be put back the way it was.</string>
 </resources>

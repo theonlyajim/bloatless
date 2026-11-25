@@ -64,21 +64,19 @@ private val CARD_GAP = 10.dp
 @Composable
 fun StylePicker(options: List<StyleChoice>, selectedKey: String?, onSelect: (StyleChoice) -> Unit, modifier: Modifier = Modifier,
     groupLabel: String? = null) {
+    // Bloatless (mockup v4): a grid of three a row, so every style shows at once and nothing scrolls sideways.
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        // The prototype's clamp(140px, 42%, 176px): 140 dp on a 360 dp phone, so two cards show and
-        // the third peeks in, a hint that the strip scrolls.
-        val cardWidth = (maxWidth * 0.42f).coerceIn(140.dp, 176.dp).coerceAtMost(maxWidth)
-        val scroll = rememberScrollState()
-        val density = LocalDensity.current
-        val step = with(density) { (cardWidth + CARD_GAP).toPx() }
-        val decay = rememberSplineBasedDecay<Float>()
-        val fling = remember(scroll, step, decay) { SnapToCards(scroll, step, decay) }
-        Row(
-            Modifier.fillMaxWidth().testTag(STYLE_STRIP_TAG).horizontalScroll(scroll, flingBehavior = fling).selectableGroup()
+        val cardWidth = (maxWidth - CARD_GAP * 2) / 3
+        Column(
+            Modifier.fillMaxWidth().testTag(STYLE_STRIP_TAG).selectableGroup()
                 .then(if (groupLabel != null) Modifier.semantics { contentDescription = groupLabel } else Modifier),
-            horizontalArrangement = Arrangement.spacedBy(CARD_GAP),
+            verticalArrangement = Arrangement.spacedBy(CARD_GAP),
         ) {
-            for (o in options) StyleCardView(o, o.key == selectedKey, cardWidth, onSelect)
+            options.chunked(3).forEach { row ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(CARD_GAP)) {
+                    for (o in row) StyleCardView(o, o.key == selectedKey, cardWidth, onSelect)
+                }
+            }
         }
     }
 }
@@ -92,33 +90,33 @@ private fun StyleCardView(o: StyleChoice, selected: Boolean, width: Dp, onSelect
         Modifier.width(width).clip(shape)
             .selectable(selected, enabled = o.enabled, role = Role.RadioButton) { onSelect(o) }
             .semantics(mergeDescendants = true) { contentDescription = label }
-            .padding(4.dp),
+            .padding(2.dp),
     ) {
         // The rim is drawn inside the same 2 dp padding either way, so choosing a card never moves
         // its picture or its name.
         Box(
             Modifier.fillMaxWidth().clip(shape).background(c.surface1)
-                .border(if (selected) 2.dp else 1.dp, if (selected) c.textPrimary else c.outline, shape)
+                .border(if (selected) 2.dp else 1.dp, if (selected) c.accent else c.outline, shape)
                 .padding(2.dp),
         ) {
-            val miniWidth = width - 14.dp
+            val miniWidth = width - 12.dp
             Box(Modifier.alpha(if (o.enabled) 1f else 0.45f).clearAndSetSemantics {}) {
                 if (o.look != null) TvPreview(o.look, "", Modifier.width(miniWidth))
                 else Box(Modifier.size(miniWidth, miniWidth * 9f / 16f).background(Color.Black, shape))
             }
             if (selected) {
                 Box(
-                    Modifier.align(Alignment.TopEnd).padding(5.dp).size(22.dp).background(c.textPrimary, CytTheme.shapes.pill),
+                    Modifier.align(Alignment.TopEnd).padding(4.dp).size(18.dp).background(c.accent, CytTheme.shapes.pill),
                     contentAlignment = Alignment.Center,
-                ) { CytIcon(CytIcons.Check, null, tint = c.bg, size = 14.dp) }
+                ) { CytIcon(CytIcons.Check, null, tint = c.onPrimary, size = 12.dp) }
             }
         }
         Text(
             o.name, Modifier.padding(top = 6.dp, start = 2.dp, end = 2.dp).clearAndSetSemantics {},
-            color = if (selected) c.textPrimary else c.textSecondary, style = CytTheme.type.bodyMedium, maxLines = 2,
+            color = if (selected) c.textPrimary else c.textSecondary, style = CytTheme.type.bodySmall, maxLines = 2,
         )
         if (o.note != null) {
-            Text(o.note, Modifier.padding(start = 2.dp, end = 2.dp).clearAndSetSemantics {}, color = c.textSecondary, style = CytTheme.type.bodySmall)
+            Text(o.note, Modifier.padding(start = 2.dp, end = 2.dp).clearAndSetSemantics {}, color = c.textTertiary, style = CytTheme.type.bodySmall)
         }
     }
 }

@@ -168,6 +168,7 @@ object GoldenText {
         is Op.AccessibilityAdd -> "AccessibilityAdd expected=${op.expected ?: "null"} component=${op.component.flat}"
         is Op.AccessibilityRemove -> "AccessibilityRemove expected=${op.expected ?: "null"} component=${op.component.flat} offIfEmpty=${op.offIfEmpty}"
         is Op.ArmHelperWatchdog -> "ArmHelperWatchdog component=${op.component.flat} seconds=${op.seconds} token=${op.token.value} offIfEmpty=${op.offIfEmpty}"
+        is Op.AppOpAllow -> "AppOpAllow pkg=${op.pkg.value} appOp=${op.appOp.name}"
     }
 
     fun blob(b: BlobRef) = "${b.sha256.hex}:${b.size}:${b.path}"
