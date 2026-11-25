@@ -291,10 +291,22 @@ fun FoundScreen(
             // 0.3.2 B1: careful mode invites the person to help, next to the sentence that explains it.
             if (!nothingToDo) TertiaryButton(stringResource(R.string.found_help_add_tv), onHelpAddTv)
         }
-        if (off > 0) PlanSummaryCard(
-            summary.groups.filter { it.off > 0 }.map { SummaryGroup(it.id, it.title, it.off) },
-            stringResource(R.string.found_see_list), { actions.intent(SetupIntent.Open(Sheet.LIST)) }, Modifier.padding(top = 20.dp),
-        )
+        // Bloatless (mockup v4): every group with a switch, its count under it; a switch keeps or switches off the
+        // whole group (one Keep a row, the same edit Customise makes), and See the list goes to the rows.
+        val switchable = summary.groups.filter { g -> g.rows.any { !it.protected } }
+        if (switchable.isNotEmpty() && !nothingToDo) {
+            ListGroup(Modifier.padding(top = 20.dp)) {
+                switchable.forEachIndexed { i, g ->
+                    if (i > 0) ListDivider()
+                    val rows = g.rows.filter { !it.protected }
+                    val on = g.off > 0
+                    SwitchRow(g.title, on, { want -> rows.forEach { r -> if (r.off != want) actions.intent(SetupIntent.Keep(r.pkg, keep = !want)) } },
+                        subtitle = if (on) msg(R.string.found_group_off, "count" to g.off) else msg(R.string.found_group_kept, "count" to rows.size))
+                }
+                ListDivider()
+                LinkRow(stringResource(R.string.found_see_list), { actions.intent(SetupIntent.Open(Sheet.LIST)) })
+            }
+        }
         if (!nothingToDo) {
             // UX finding 25: a Fire TV has no Chromecast.
             val fixed = stringResource(if (extras.fireTv) R.string.found_keep_fixed_fire else R.string.found_keep_fixed)
