@@ -65,6 +65,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import tv.cleanyour.ui.design.component.LookEditorState
 import tv.cleanyour.ui.design.component.TvPreview
+import tv.cleanyour.ui.design.component.LookInline
 import tv.cleanyour.ui.design.component.TvThumbnail
 import tv.cleanyour.ui.design.component.rememberPng
 import tv.cleanyour.ui.design.component.galleryPictureName
@@ -87,6 +88,7 @@ fun HomeScreen(
     var dockOpen by rememberSaveable { mutableStateOf(false) }
     var prayerOpen by rememberSaveable { mutableStateOf(openPrayer) }
     var placesOpen by rememberSaveable { mutableStateOf(false) }
+    var moreOpen by rememberSaveable { mutableStateOf(false) }
     val busy = state.busy
     ScreenScaffold(Glow.Tv, modifier, topBar = { CytTopBar(onBack = onBack) }) {
         ScreenTitle(stringResource(R.string.home_title), Modifier.padding(top = 20.dp))
@@ -116,16 +118,25 @@ fun HomeScreen(
                     guardObscured = true)
             }
         }
-        // Bloatless (mockup v4): what the TV shows now as a big preview, and one button into the look editor.
-        if (state.lookShot == null || busy != null) {
+        // Bloatless (mockup v4): the look on the page itself. The draft opens with the page; layouts and themes are
+        // grids right here, the button sends, and More options opens the full Look sheet on the same draft.
+        val editor = state.lookEditor()
+        if (editor != null && busy == null && !state.lookFailed) {
+            LookInline(editor, onEdit = { onIntent(HomeScreenIntent.Look(it)) }, onPick = { moreOpen = true },
+                onUpdateHomeScreen = if (state.updateTo == null) null else ({ onIntent(HomeScreenIntent.PreviewUpdate) }))
+            PrimaryButton(stringResource(R.string.home_put_on_tv), { onIntent(HomeScreenIntent.UseLook) }, Modifier.padding(top = 20.dp),
+                enabled = state.look?.canSend == true)
+            TertiaryButton(stringResource(R.string.home_more_options), { moreOpen = true }, Modifier.fillMaxWidth().padding(top = 4.dp))
+        } else if (state.lookShot == null || busy != null) {
             state.sent?.let { p ->
                 Box(Modifier.padding(top = 16.dp).fillMaxWidth().clearAndSetSemantics {}) {
                     TvPreview(p.toTvLook(lookPicture(p.picturePath, sample = 4)), "", Modifier.fillMaxWidth())
                 }
             }
         }
-        if (busy == null && state.notOnTv == null) {
-            PrimaryButton(stringResource(R.string.home_change_look), { onIntent(HomeScreenIntent.OpenLook) }, Modifier.padding(top = 16.dp), guardObscured = false)
+        // Opens the draft whenever the page has none (on arrival, after a send, after the sheet closed).
+        androidx.compose.runtime.LaunchedEffect(state.look == null, busy == null, state.notOnTv == null, state.lookFailed, state.lookSending) {
+            if (state.look == null && busy == null && state.notOnTv == null && !state.lookFailed && !state.lookSending) onIntent(HomeScreenIntent.OpenLook)
         }
         ListGroup(Modifier.padding(top = 20.dp)) {
             // The dock's apps by name, and how many more sit in the rows under it.
@@ -134,8 +145,6 @@ fun HomeScreen(
             val dockLine = if (below > 0) msg(R.string.home_row_dock_rows, "names" to inDock, "count" to below) else inDock
             ListRow(stringResource(R.string.home_row_dock), subtitle = dockLine.ifEmpty { null },
                 onClick = if (busy == null) ({ dockOpen = true }) else null)
-            ListDivider()
-            LookRow(state, onClick = if (busy == null) ({ onIntent(HomeScreenIntent.OpenLook) }) else null)
         }
         // Bloatless: JAKIM prayer times on Home and the azan.
         ListGroup(Modifier.padding(top = 12.dp)) {
@@ -193,7 +202,8 @@ fun HomeScreen(
             waiting = state.waiting)
     }
     // The Look sheet, while a draft is open and not sending (the sheet closes on "Put it on the TV").
-    if (state.look != null && busy == null && !state.lookFailed) LookSheet(state, onIntent, photos)
+    if (moreOpen && state.look != null && busy == null && !state.lookFailed) LookSheet(state, onIntent, photos, onClose = { moreOpen = false })
+    if (state.look == null || busy != null) moreOpen = false
     state.stockPreview?.let { plan ->
         CytBottomSheet({ onIntent(HomeScreenIntent.CancelPreview) }) { StockPreviewContent(plan, onIntent) }
     }

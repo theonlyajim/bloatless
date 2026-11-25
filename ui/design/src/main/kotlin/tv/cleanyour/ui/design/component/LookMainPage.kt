@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -284,3 +285,35 @@ private fun buttonsWord(b: ButtonsChoice) = stringResource(
         ButtonsChoice.MENU -> R.string.cyt_look_word_buttons_menu
     },
 )
+
+// Bloatless (mockup v4): the look on the Home screen page itself, no sheet: the TV as it will look, the layouts
+// (styles) as a grid, then the pictures (themes) as a grid. A tap only changes the draft; the page's own button
+// sends it. More options (movement, glow, dock band...) stay in the Look sheet.
+@Composable
+fun ColumnScope.LookInline(
+    state: LookEditorState,
+    onEdit: (LookEdit) -> Unit,
+    onPick: (() -> Unit)?,
+    onUpdateHomeScreen: (() -> Unit)?,
+    pictures: Map<String, ImageBitmap>? = null,
+) {
+    state.preview?.let { p ->
+        Box(Modifier.fillMaxWidth().padding(top = 16.dp)) {
+            TvPreview(p.toTvLook(lookPicture(p.picturePath, pictures, sample = 4)), previewDescription(state), Modifier.fillMaxWidth())
+        }
+    }
+    val styleTitle = stringResource(R.string.cyt_inline_layout)
+    LookSection(styleTitle)
+    if (!state.reads27) {
+        Banner(
+            stringResource(R.string.cyt_look_update_banner), BannerTone.INFO, Modifier.padding(bottom = 12.dp),
+            actionLabel = onUpdateHomeScreen?.let { stringResource(R.string.cyt_look_update_action) }, onAction = { onUpdateHomeScreen?.invoke() },
+        )
+    }
+    StylePicker(styleChoices(state, pictures), state.style.id, { ch -> StyleId.of(ch.key)?.let { onEdit(LookEdit.SelectStyle(it)) } }, groupLabel = styleTitle)
+    val pictureTitle = stringResource(R.string.cyt_inline_theme)
+    LookSection(pictureTitle)
+    PicturePicker(pictureChoices(state, pictures, onPick != null), state.picture, { ch ->
+        if (ch.action) onPick?.invoke() else onEdit(LookEdit.SelectPicture(ch.key))
+    }, groupLabel = pictureTitle)
+}

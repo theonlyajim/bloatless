@@ -7,3 +7,12 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
 }
+
+// Bloatless: the fake TV as a server for the emulator (FakeTvServer.kt).
+tasks.register<JavaExec>("runFakeTv") {
+    group = "application"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("tv.cleanyour.testing.fakeadbd.FakeTvServerKt")
+    systemProperty("cleanyourtv.repoRoot", rootProject.projectDir.absolutePath)
+    standardInput = System.`in`
+}

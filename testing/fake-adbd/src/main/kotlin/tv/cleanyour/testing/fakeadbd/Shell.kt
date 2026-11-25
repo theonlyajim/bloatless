@@ -108,6 +108,7 @@ object ShellParser {
 class FakeShell(private val tv: FakeTv, private val faults: Faults) {
 
     suspend fun run(line: String): ExecOutcome {
+        for (h in tv.rawHandlers) h(line)?.let { return it }
         val parsed = ShellParser.parse(line)
         parsed.unsupported?.let { return ExecOutcome("", 2, "/system/bin/sh: syntax error: $it\n") }
         if (parsed.chained && parsed.commands.any { isPmWrite(it.argv) }) {

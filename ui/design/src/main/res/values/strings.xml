@@ -373,4 +373,6 @@
     <string name="cyt_address_connect">Connect</string>
     <!-- Bloatless: the picture grid shows two rows first. -->
     <string name="picker_show_all">Show all (%1$d)</string>
+    <string name="cyt_inline_layout">Layout</string>
+    <string name="cyt_inline_theme">Theme</string>
 </resources>

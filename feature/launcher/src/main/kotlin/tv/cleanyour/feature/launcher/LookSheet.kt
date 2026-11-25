@@ -22,12 +22,14 @@ import tv.cleanyour.ui.design.component.toEditor
 // keeps it); nothing reaches the TV until "Put it on the TV". The sheet closes on it, as in 0.4.0,
 // and Home shows the progress; a failed send keeps the draft for Open Look.
 @Composable
-internal fun LookSheet(state: HomeScreenState, onIntent: (HomeScreenIntent) -> Unit, photos: PhotoPicker? = null) {
+internal fun LookSheet(state: HomeScreenState, onIntent: (HomeScreenIntent) -> Unit, photos: PhotoPicker? = null,
+    onClose: (() -> Unit)? = null) {
     val editor = state.lookEditor() ?: return
     LookEditorSheet(
         editor, onEdit = { onIntent(HomeScreenIntent.Look(it)) },
         onPhoto = { jpeg, dim -> onIntent(HomeScreenIntent.SetOwnPicture(jpeg, dim)) },
-        onClose = { onIntent(HomeScreenIntent.CloseLook) },
+        // Bloatless: from the Home screen page the sheet only closes; the draft stays on the page.
+        onClose = onClose ?: { onIntent(HomeScreenIntent.CloseLook) },
         footer = { page -> LookFooter(editor, page, onIntent) },
         photos = photos, onUpdateHomeScreen = updateRoute(state, onIntent),
     )

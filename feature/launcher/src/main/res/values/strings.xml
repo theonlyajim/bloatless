@@ -160,4 +160,6 @@
     <string name="places_6h">6 hours</string>
     <string name="places_1d">Day</string>
     <string name="places_save">Save and send to the TV</string>
+    <string name="home_put_on_tv">Put it on the TV</string>
+    <string name="home_more_options">More options</string>
 </resources>

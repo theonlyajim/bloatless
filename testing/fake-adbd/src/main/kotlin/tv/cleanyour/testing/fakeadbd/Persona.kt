@@ -68,6 +68,8 @@ class FakeTv(
 
     // Tried before the built-in vocabulary; return null to fall through.
     val handlers = CopyOnWriteArrayList<(argv: List<String>, line: String) -> ExecOutcome?>()
+    // Bloatless: whole lines answered before parsing (the served fake TV's scripts with pipes); empty in the tests.
+    val rawHandlers = CopyOnWriteArrayList<(line: String) -> ExecOutcome?>()
 
     init {
         for (line in propLines) {
