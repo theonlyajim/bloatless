@@ -162,4 +162,7 @@
     <string name="places_save">Save and send to the TV</string>
     <string name="home_put_on_tv">Put it on the TV</string>
     <string name="home_more_options">More options</string>
+    <string name="prayer_today">Today, {place}</string>
+    <string name="prayer_today_none">Today\'s times show once the phone is online.</string>
+    <string name="prayer_change">Change</string>
 </resources>

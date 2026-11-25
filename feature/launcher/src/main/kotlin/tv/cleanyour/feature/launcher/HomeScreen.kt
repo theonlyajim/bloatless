@@ -81,12 +81,12 @@ import tv.cleanyour.ui.design.component.toTvLook
 // 0.4.7: `onOpenUrl` opens the TV list page from the not-on-this-TV screen (the browser opens it).
 fun HomeScreen(
     state: HomeScreenState, onIntent: (HomeScreenIntent) -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier, photos: PhotoPicker? = null,
-    onReport: (String) -> Unit = {}, onOpenUrl: (String) -> Unit = {}, openPrayer: Boolean = false,
+    onReport: (String) -> Unit = {}, onOpenUrl: (String) -> Unit = {}, onOpenPrayer: (() -> Unit)? = null,
 ) {
     val notOnTv = state.notOnTv
     if (notOnTv != null) { NotOnTvScreen(state.tvName, notOnTv, onIntent, onBack, modifier, onReport, onOpenUrl); return }
     var dockOpen by rememberSaveable { mutableStateOf(false) }
-    var prayerOpen by rememberSaveable { mutableStateOf(openPrayer) }
+    var prayerOpen by rememberSaveable { mutableStateOf(false) }
     var placesOpen by rememberSaveable { mutableStateOf(false) }
     var moreOpen by rememberSaveable { mutableStateOf(false) }
     val busy = state.busy
@@ -151,7 +151,7 @@ fun HomeScreen(
             val p = state.prayer
             val sub = if (!p.on) stringResource(R.string.prayer_row_off)
                 else stringResource(R.string.prayer_row_on, p.zone, stringResource(if (p.azan) R.string.prayer_row_azan_on else R.string.prayer_row_azan_off))
-            ListRow(stringResource(R.string.prayer_row), subtitle = sub, onClick = if (busy == null) ({ prayerOpen = true }) else null)
+            ListRow(stringResource(R.string.prayer_row), subtitle = sub, onClick = if (busy == null) ({ onOpenPrayer?.invoke() ?: run { prayerOpen = true } }) else null)
             ListDivider()
             val pl = state.places
             ListRow(stringResource(R.string.places_title), subtitle = if (pl.on) intervalName(pl.minutes) else stringResource(R.string.prayer_row_off),

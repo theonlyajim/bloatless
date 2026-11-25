@@ -127,6 +127,8 @@ data class HomeScreenState(
     val prayer: PrayerSettings = PrayerSettings.OFF,
     // Bloatless: this TV's changing wallpaper (WallpaperPrefs), sent with every look.
     val places: PlacesSettings = PlacesSettings.OFF,
+    // Bloatless: today's five times for the chosen zone ("HH:mm"), null until read or when they cannot be.
+    val prayerToday: List<String>? = null,
 ) {
     val waiting: Int get() = waitingApps.size
 }
@@ -180,6 +182,7 @@ class HomeScreenMachine(
     private class LookShot(val png: ByteArray?)
     private data class PrayerLoaded(val s: PrayerSettings)
     private data class PlacesLoaded(val s: PlacesSettings)
+    private data class PrayerToday(val zone: String, val times: List<String>?)
     private var staged: ByteArray? = null   // the bytes of state.newPicture, kept once the TV has them
     private var updated = false   // D4: this screen updated the launcher; the stored snapshot does not know yet
     // look2: what the Look sheet works from, as the last load read it: the saved choice (what was
@@ -195,7 +198,7 @@ class HomeScreenMachine(
 
     override fun reduce(state: HomeScreenState, event: Any): HomeScreenState = when (event) {
         is Loaded -> event.s.copy(busy = state.busy, stockPreview = state.stockPreview, drift = state.drift, updatePreview = state.updatePreview,
-            newPicture = state.newPicture, newDim = state.newDim, lookFailed = state.lookFailed, lookSending = state.lookSending, lookShot = state.lookShot, prayer = state.prayer, places = state.places).let { s ->
+            newPicture = state.newPicture, newDim = state.newDim, lookFailed = state.lookFailed, lookSending = state.lookSending, lookShot = state.lookShot, prayer = state.prayer, places = state.places, prayerToday = state.prayerToday).let { s ->
             saved = event.saved; earlier = event.earlier; cards = event.cards; keyNames = event.keyNames
             s.copy(look = state.look?.let { drafts.refresh(it, lookContext(s)) })
         }
@@ -222,8 +225,10 @@ class HomeScreenMachine(
         HomeScreenIntent.RestoreMine, is HomeScreenIntent.SetDock, is HomeScreenIntent.SetTheme -> state.copy(lookShot = null)
         is LookShot -> state.copy(lookShot = event.png)
         is PrayerLoaded -> state.copy(prayer = event.s)
-        is HomeScreenIntent.SetPrayer -> state.copy(prayer = event.settings, lookShot = null)
+        is HomeScreenIntent.SetPrayer -> state.copy(prayer = event.settings, lookShot = null,
+            prayerToday = state.prayerToday.takeIf { event.settings.zone == state.prayer.zone })
         is PlacesLoaded -> state.copy(places = event.s)
+        is PrayerToday -> if (event.zone == state.prayer.zone) state.copy(prayerToday = event.times) else state
         is HomeScreenIntent.SetPlaces -> state.copy(places = event.settings, lookShot = null)
         is LookResult -> if (event.sent) state.copy(newPicture = null, newDim = state.ownDim, lookFailed = false, lookSending = false)
             else state.copy(lookFailed = true, lookSending = false)
@@ -302,6 +307,7 @@ class HomeScreenMachine(
                 else apply(savedDock() ?: after.dock.map { it.pkg }, after.themeId, after.pictureId, columns = savedColumns())
             }
             is HomeScreenIntent.SetPrayer -> scope.launch {
+                if (event.settings.zone != before.prayer.zone) fetchToday(event.settings.zone)
                 attempt { PrayerPrefs(d.documents).save(tvId, event.settings) }
                     .onFailure { effect(ManageEffect.Snackbar(SnackKind.FAILED, "", false)); return@launch }
                 if (after.notOnTv != null) return@launch
@@ -331,8 +337,16 @@ class HomeScreenMachine(
         }
     }
 
+    // Bloatless: today's times for the Prayer times page, read from the phone (the TV reads its own).
+    private suspend fun fetchToday(zone: String) {
+        if (zone.isEmpty()) return
+        send(PrayerToday(zone, attempt { d.prayerTimes.today(zone) }.getOrNull()))
+    }
+
     private suspend fun load() {
-        send(PrayerLoaded(attempt { PrayerPrefs(d.documents).load(tvId) }.getOrNull() ?: PrayerSettings.OFF))
+        val prayer = attempt { PrayerPrefs(d.documents).load(tvId) }.getOrNull() ?: PrayerSettings.OFF
+        send(PrayerLoaded(prayer))
+        if (prayer.on) scope.launch { fetchToday(prayer.zone) }
         send(PlacesLoaded(attempt { WallpaperPrefs(d.documents).load(tvId) }.getOrNull() ?: PlacesSettings.OFF))
         val tv = d.tv(tvId) ?: return
         val profile = d.profileOf(tv)

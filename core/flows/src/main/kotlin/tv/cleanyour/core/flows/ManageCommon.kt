@@ -111,6 +111,7 @@ class ManageDeps(
     val clock: Clock,
     val copy: FlowCopy,
     val encoder: ConfigEncoder = ConfigEncoder.Codec,
+    val prayerTimes: PrayerTimesSource = PrayerTimesSource.NONE,   // Bloatless: today's times for the Prayer times page
     val appVersion: String = "0.2.0",
     val openWrites: OpenWrites = OpenWrites(),   // one per graph, shared by every Manage machine (R5-W8 O2)
     val store: StoreRules = StoreRules.FULL,     // STORES-PLAN 1: the update check and the add-ons of this build

@@ -221,7 +221,7 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
         configTransport = configTransport, restorePoint = restorePoint, bundleWriter = bundleWriter,
         registry = registry, fetcher = fetcher, inspector = inspector, cardDetector = CardAnswerDetector.Unknown,
         sessionEnd = sessionEnd, homePrefs = homePrefs, appPrefs = appPrefs, keyInfo = keyInfo, updates = updates,
-        diagnostics = diagnostics, clock = clock, copy = copy, encoder = ConfigEncoder.Codec, appVersion = appVersion,
+        diagnostics = diagnostics, clock = clock, copy = copy, encoder = ConfigEncoder.Codec, prayerTimes = HttpPrayerTimes(), appVersion = appVersion,
         openWrites = openWrites,
         store = store.rules,       // STORES-PLAN 1
         about = about, homeDecisions = homeDecisions,   // 0.3.2 B1, B2

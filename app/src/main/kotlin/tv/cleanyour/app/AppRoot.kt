@@ -88,7 +88,8 @@ import tv.cleanyour.feature.setup.SetupFlow
     @Serializable data class SwitchedOff(val tvId: String) : Dest
     @Serializable data class Leftovers(val tvId: String) : Dest
     // 0.4.8: `again`, from Done's "Not right? Send it again": the page sends the saved look once it has loaded.
-    @Serializable data class Home(val tvId: String, val again: Boolean = false, val prayer: Boolean = false) : Dest
+    @Serializable data class Home(val tvId: String, val again: Boolean = false) : Dest
+    @Serializable data class Prayer(val tvId: String) : Dest   // Bloatless: the Prayer times page
     @Serializable data class Modules(val tvId: String) : Dest
     @Serializable data class Restore(val tvId: String) : Dest
     @Serializable data class TvSettings(val tvId: String) : Dest
@@ -119,7 +120,7 @@ internal fun applyRoute(stack: MutableList<NavKey>, route: String, noTvs: Boolea
         "resume" -> id?.let { t -> parts.getOrNull(2)?.let { p -> Dest.Setup(t, p) } }
         "modules" -> if (addOns) id?.let { Dest.Modules(it) } else null
         "home" -> if (id != null) Dest.Home(id, again = parts.getOrNull(2) == "again") else null
-        "prayer" -> if (id != null) Dest.Home(id, prayer = true) else null   // Bloatless
+        "prayer" -> if (id != null) Dest.Prayer(id) else null   // Bloatless
         "switchedoff" -> id?.let { Dest.SwitchedOff(it) }
         "leftovers" -> id?.let { Dest.Leftovers(it) }
         "restore" -> id?.let { Dest.Restore(it) }
@@ -320,9 +321,16 @@ fun AppRoot(graph: AppGraph, start: Dest, onExit: () -> Unit) {
                     val m = rememberMachine("home:${key.tvId}:${key.again}") { graph.homeScreen(it, TvId(key.tvId), key.again) }
                     val state by m.state.collectAsStateWithLifecycle()
                     LaunchedEffect(m) { m.effects.collect { onManageEffect(it) } }
-                    HomeScreen(state, m::dispatch, onBack = { go("back") }, photos = photoPicker, openPrayer = key.prayer, onReport = { lead ->
+                    HomeScreen(state, m::dispatch, onBack = { go("back") }, photos = photoPicker, onOpenPrayer = { go("prayer/${key.tvId}") }, onReport = { lead ->
                         go(IssueRoute.of(TvId(key.tvId), ReportContext("Home screen", ReportContext.named(lead, state.tvName), "HOME_BLOCKED_${state.notOnTv?.reason ?: "NONE"}")))
                     }, onOpenUrl = { url -> scope.launch { onManageEffect(ManageEffect.OpenUrl(url)) } })
+                }
+                // Bloatless: the Prayer times page, on the Home screen page's machine (the choice and the send are its own).
+                entry<Dest.Prayer> { key ->
+                    val m = rememberMachine("home:${key.tvId}:false") { graph.homeScreen(it, TvId(key.tvId), false) }
+                    val state by m.state.collectAsStateWithLifecycle()
+                    LaunchedEffect(m) { m.effects.collect { onManageEffect(it) } }
+                    tv.cleanyour.feature.launcher.PrayerScreen(state, m::dispatch, onBack = { go("back") })
                 }
                 entry<Dest.Modules> { key ->
                     val m = rememberMachine("modules:${key.tvId}") { graph.modules(it, TvId(key.tvId)) }
