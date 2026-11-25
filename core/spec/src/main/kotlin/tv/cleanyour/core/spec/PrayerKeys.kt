@@ -130,3 +130,53 @@ object PrayerKeys {
         JakimZone("WLY02", "Wilayah Persekutuan", "Labuan"),
     )
 }
+
+// Bloatless: the zone nearest a place, from the towns of each zone (approximate, the person confirms it). Zones that
+// are a mountain or a single village (Gunung Jerai, Bukit Larut, Temengor, Gunung Kinabalu, Kampung Patarikan,
+// Genting Sempah) are never picked from a location: their towns sit inside a bigger zone around them.
+object ZoneFinder {
+    private val TOWNS: Map<String, List<Pair<Double, Double>>> = mapOf(
+        "JHR01" to listOf(2.45 to 104.52), "JHR02" to listOf(1.49 to 103.74, 1.74 to 103.90, 2.43 to 103.83, 1.66 to 103.60),
+        "JHR03" to listOf(2.03 to 103.32, 1.49 to 103.39), "JHR04" to listOf(1.85 to 102.93, 2.05 to 102.57, 2.50 to 102.82, 2.27 to 102.54),
+        "KDH01" to listOf(6.12 to 100.37, 6.43 to 100.43), "KDH02" to listOf(5.65 to 100.49, 5.96 to 100.37), "KDH03" to listOf(5.81 to 100.73, 6.22 to 100.73),
+        "KDH04" to listOf(5.68 to 100.92), "KDH05" to listOf(5.37 to 100.56, 5.21 to 100.62), "KDH06" to listOf(6.35 to 99.80),
+        "KTN01" to listOf(6.13 to 102.24, 5.53 to 102.20, 5.76 to 102.22), "KTN02" to listOf(4.88 to 101.97, 5.70 to 101.84),
+        "MLK01" to listOf(2.19 to 102.25, 2.38 to 102.21),
+        "NGS01" to listOf(2.47 to 102.23, 2.75 to 102.55), "NGS02" to listOf(2.74 to 102.25, 3.06 to 102.10, 2.42 to 102.10),
+        "NGS03" to listOf(2.73 to 101.94, 2.52 to 101.80),
+        "PHG01" to listOf(2.79 to 104.16), "PHG02" to listOf(3.81 to 103.33, 3.49 to 103.39, 2.79 to 102.82),
+        "PHG03" to listOf(3.45 to 102.42, 3.93 to 102.36, 3.53 to 102.75), "PHG04" to listOf(3.79 to 101.86, 3.52 to 101.91, 4.18 to 102.05),
+        "PHG06" to listOf(4.47 to 101.38), "PHG07" to listOf(2.80 to 103.49),
+        "PLS01" to listOf(6.44 to 100.20), "PNG01" to listOf(5.41 to 100.33, 5.35 to 100.47),
+        "PRK01" to listOf(4.20 to 101.26, 3.68 to 101.52), "PRK02" to listOf(4.60 to 101.08, 4.77 to 100.94, 4.31 to 101.15),
+        "PRK03" to listOf(5.43 to 101.13), "PRK05" to listOf(4.02 to 101.02, 4.21 to 100.70, 4.37 to 100.63),
+        "PRK06" to listOf(4.85 to 100.74, 5.01 to 100.53, 5.11 to 100.48),
+        "SBH01" to listOf(5.84 to 118.12), "SBH02" to listOf(5.89 to 117.56), "SBH03" to listOf(5.03 to 118.33, 4.48 to 118.61),
+        "SBH04" to listOf(4.24 to 117.89), "SBH05" to listOf(6.88 to 116.84, 6.49 to 116.77),
+        "SBH07" to listOf(5.98 to 116.07, 5.96 to 116.68, 5.73 to 115.93), "SBH08" to listOf(5.34 to 116.16), "SBH09" to listOf(5.35 to 115.75, 4.80 to 115.77),
+        "SGR01" to listOf(3.07 to 101.52, 3.25 to 101.65, 2.99 to 101.79, 2.72 to 101.75, 3.32 to 101.58, 3.11 to 101.61),
+        "SGR02" to listOf(3.34 to 101.25, 3.68 to 100.99), "SGR03" to listOf(3.04 to 101.45, 2.82 to 101.50),
+        "SWK01" to listOf(4.75 to 115.00), "SWK02" to listOf(4.40 to 113.99), "SWK03" to listOf(3.17 to 113.04), "SWK04" to listOf(2.29 to 111.83, 2.90 to 112.10),
+        "SWK05" to listOf(2.13 to 111.52), "SWK06" to listOf(1.24 to 111.46), "SWK07" to listOf(1.17 to 110.57), "SWK08" to listOf(1.55 to 110.36),
+        "TRG01" to listOf(5.33 to 103.14), "TRG02" to listOf(5.74 to 102.49), "TRG03" to listOf(5.07 to 103.01), "TRG04" to listOf(4.76 to 103.42, 4.23 to 103.42),
+        "WLY01" to listOf(3.14 to 101.69, 2.93 to 101.69), "WLY02" to listOf(5.28 to 115.24),
+    )
+
+    // The zone with the town nearest (lat, lon), or null outside Malaysia (more than about 60 km from every town).
+    fun nearest(lat: Double, lon: Double): String? {
+        var best: String? = null
+        var bestKm = Double.MAX_VALUE
+        for ((zone, towns) in TOWNS) for ((tLat, tLon) in towns) {
+            val km = km(lat, lon, tLat, tLon)
+            if (km < bestKm) { bestKm = km; best = zone }
+        }
+        return best.takeIf { bestKm <= 60.0 }
+    }
+
+    private fun km(aLat: Double, aLon: Double, bLat: Double, bLon: Double): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(bLat - aLat); val dLon = Math.toRadians(bLon - aLon)
+        val h = Math.sin(dLat / 2).let { it * it } + Math.cos(Math.toRadians(aLat)) * Math.cos(Math.toRadians(bLat)) * Math.sin(dLon / 2).let { it * it }
+        return 2 * r * Math.asin(Math.sqrt(h))
+    }
+}

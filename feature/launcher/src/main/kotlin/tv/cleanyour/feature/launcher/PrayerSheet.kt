@@ -54,7 +54,8 @@ fun PrayerSheet(current: PrayerSettings, onSave: (PrayerSettings) -> Unit, onDis
 }
 
 @Composable
-internal fun ColumnScope.PrayerContent(current: PrayerSettings, onSave: (PrayerSettings) -> Unit, page: Boolean = false) {
+internal fun ColumnScope.PrayerContent(current: PrayerSettings, onSave: (PrayerSettings) -> Unit, page: Boolean = false,
+    onLocate: (((String?) -> Unit) -> Unit)? = null) {
     // Keyed on the saved choice, so a page that opens before it is read shows it once it is.
     var on by remember(current) { mutableStateOf(current.on) }
     var state by remember(current) { mutableStateOf(PrayerKeys.zone(current.zone)?.state) }
@@ -63,6 +64,8 @@ internal fun ColumnScope.PrayerContent(current: PrayerSettings, onSave: (PrayerS
     var volume by remember(current) { mutableStateOf(current.volume) }
     var prayers by remember(current) { mutableStateOf(current.prayers) }
     var picking by remember(current) { mutableStateOf(current.zone.isEmpty()) }
+    var locating by remember { mutableStateOf(false) }
+    var located by remember { mutableStateOf<Boolean?>(null) }   // false: no zone found from the location
 
     if (!page) SheetHeader(stringResource(R.string.prayer_title), subtitle = stringResource(R.string.prayer_subtitle))
     // In the sheet the list scrolls inside it; on the page the page itself scrolls.
@@ -80,6 +83,22 @@ internal fun ColumnScope.PrayerContent(current: PrayerSettings, onSave: (PrayerS
                         onClick = { picking = true })
                 }
             } else {
+                // Bloatless: one tap to the zone for where the phone is, before the lists.
+                if (onLocate != null) {
+                    ListGroup(Modifier.padding(top = 20.dp)) {
+                        ListRow(stringResource(if (locating) R.string.prayer_locating else R.string.prayer_locate),
+                            subtitle = stringResource(if (located == false) R.string.prayer_locate_failed else R.string.prayer_locate_note),
+                            onClick = if (locating) null else ({
+                                locating = true
+                                onLocate { code ->
+                                    locating = false
+                                    val z = code?.let { PrayerKeys.zone(it) }
+                                    located = z != null
+                                    if (z != null) { zone = z.code; state = z.state; picking = false }
+                                }
+                            }))
+                    }
+                }
                 Overline(stringResource(R.string.prayer_state), Modifier.padding(top = 20.dp, bottom = 8.dp, start = 4.dp))
                 ChoiceList(PrayerKeys.STATES.map { ChoiceOption(it, it, icon = null) }, state, { o ->
                     if (o.key != state) { state = o.key; zone = "" }
@@ -115,12 +134,13 @@ internal fun ColumnScope.PrayerContent(current: PrayerSettings, onSave: (PrayerS
 // Bloatless (mockup v4): Prayer times as a page of its own: today's five times for the zone, the next one in
 // the accent, then the same choices as the sheet. Save sends the look with them, as from the Home screen page.
 @Composable
-fun PrayerScreen(state: HomeScreenState, onIntent: (HomeScreenIntent) -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun PrayerScreen(state: HomeScreenState, onIntent: (HomeScreenIntent) -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier,
+    onLocate: (((String?) -> Unit) -> Unit)? = null) {
     ScreenScaffold(Glow.Tv, modifier, topBar = { CytTopBar(onBack = onBack) }) {
         ScreenTitle(stringResource(R.string.prayer_title), Modifier.padding(top = 20.dp))
         Lead(stringResource(R.string.prayer_subtitle), Modifier.padding(top = 8.dp))
         if (state.prayer.on) TodayCard(state.prayer.zone, state.prayerToday, Modifier.padding(top = 16.dp))
-        PrayerContent(state.prayer, { onIntent(HomeScreenIntent.SetPrayer(it)) }, page = true)
+        PrayerContent(state.prayer, { onIntent(HomeScreenIntent.SetPrayer(it)) }, page = true, onLocate = onLocate)
         Gap(24.dp)
     }
 }

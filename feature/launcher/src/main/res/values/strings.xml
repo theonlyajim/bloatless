@@ -165,4 +165,8 @@
     <string name="prayer_today">Today, {place}</string>
     <string name="prayer_today_none">Today\'s times show once the phone is online.</string>
     <string name="prayer_change">Change</string>
+    <string name="prayer_locate">Use this phone\'s location</string>
+    <string name="prayer_locating">Finding your zone…</string>
+    <string name="prayer_locate_note">Used once to pick the zone, then forgotten. Nothing is sent.</string>
+    <string name="prayer_locate_failed">Couldn\'t tell the zone from here. Pick the state and zone below.</string>
 </resources>

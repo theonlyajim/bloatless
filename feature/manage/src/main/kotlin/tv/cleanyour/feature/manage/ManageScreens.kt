@@ -142,7 +142,7 @@ fun ManageScreen(state: ManageState, onIntent: (ManageIntent) -> Unit, modifier:
             // Bloatless (mockup v4): three figures under the TV card; the four places people go most are tiles below.
             DashStats(listOf(
                 DashStat(tv.switchedOff.toString(), stringResource(R.string.dash_stat_off)),
-                DashStat(tv.dockNames.size.toString(), stringResource(R.string.dash_stat_dock)),
+                DashStat(tv.cameBack.toString(), stringResource(R.string.dash_stat_back)),
                 DashStat(tv.restorePointAtMs?.let { shortDate(it, locale) } ?: "-", stringResource(R.string.dash_stat_restore)),
             ), Modifier.padding(top = 12.dp))
             // Navigation into the wizard, whose own "Make it clean" is the guarded action (R5-W8 O1).

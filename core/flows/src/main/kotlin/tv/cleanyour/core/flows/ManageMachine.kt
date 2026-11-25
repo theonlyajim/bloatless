@@ -1,6 +1,7 @@
 package tv.cleanyour.core.flows
 
 import tv.cleanyour.core.spec.PrayerSettings
+import tv.cleanyour.core.model.EnabledState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -59,6 +60,8 @@ data class TvCard(
     val restarts: RestartTally? = null,
     // Bloatless: this TV's prayer times choice (PrayerPrefs), for the main screen's tile.
     val prayer: PrayerSettings = PrayerSettings.OFF,
+    // Bloatless: apps this phone switched off that the newest read of the TV shows on again (an update, a reset).
+    val cameBack: Int = 0,
 )
 
 data class ManageState(
@@ -161,6 +164,7 @@ class ManageMachine(
                         homeHelperOn = d.homeHelper && latest != null && HomeHelper.state(latest) == HomeHelper.State.ON,
                         restarts = attempt { d.restarts.load(tv.id) }.getOrNull()?.takeIf { it.path != null },
                         prayer = attempt { PrayerPrefs(d.documents).load(tv.id) }.getOrNull() ?: PrayerSettings.OFF,
+                        cameBack = offPkgs.count { p -> latest?.packages?.get(p)?.enabled.let { it == EnabledState.ENABLED || it == EnabledState.DEFAULT } },
                     )
                 }
                 send(Loaded(cards))

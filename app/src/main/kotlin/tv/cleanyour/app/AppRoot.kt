@@ -230,6 +230,17 @@ fun AppRoot(graph: AppGraph, start: Dest, onExit: () -> Unit) {
 
     val undoLabel = androidx.compose.ui.res.stringResource(tv.cleanyour.feature.manage.R.string.action_undo)
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    // Bloatless: Prayer times' "Use this phone's location": the permission, then one coarse fix, then the zone.
+    var onZone by remember { mutableStateOf<((String?) -> Unit)?>(null) }
+    val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        val cb = onZone; onZone = null
+        if (cb != null) { if (granted) scope.launch { cb(ZoneLocator.zone(context)) } else cb(null) }
+    }
+    fun locate(cb: (String?) -> Unit) {
+        if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED) scope.launch { cb(ZoneLocator.zone(context)) }
+        else { onZone = cb; locationPermission.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION) }
+    }
     // 0.4.0 "Your photo" on the Look sheet: the system photo picker, images only, no permission.
     var onPhoto by remember { mutableStateOf<((android.net.Uri) -> Unit)?>(null) }
     val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> if (uri != null) onPhoto?.invoke(uri); onPhoto = null }
@@ -330,7 +341,7 @@ fun AppRoot(graph: AppGraph, start: Dest, onExit: () -> Unit) {
                     val m = rememberMachine("home:${key.tvId}:false") { graph.homeScreen(it, TvId(key.tvId), false) }
                     val state by m.state.collectAsStateWithLifecycle()
                     LaunchedEffect(m) { m.effects.collect { onManageEffect(it) } }
-                    tv.cleanyour.feature.launcher.PrayerScreen(state, m::dispatch, onBack = { go("back") })
+                    tv.cleanyour.feature.launcher.PrayerScreen(state, m::dispatch, onBack = { go("back") }, onLocate = ::locate)
                 }
                 entry<Dest.Modules> { key ->
                     val m = rememberMachine("modules:${key.tvId}") { graph.modules(it, TvId(key.tvId)) }

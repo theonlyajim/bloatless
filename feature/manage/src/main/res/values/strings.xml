@@ -220,8 +220,8 @@
     <string name="appsettings_licence_pictures">Look pictures: our own work, CC0 1.0 (public domain); Aurora, Glass and Autumn lake (Ruska) from the Clean Your TV launcher, MIT</string>
     <string name="appsettings_licence_bouncycastle">Bouncy Castle cryptography library: Bouncy Castle Licence</string>
     <string name="appsettings_privacy">Privacy</string>
-    <string name="appsettings_privacy_text">Nothing leaves your network except downloads from github.com. GitHub sees your phone\'s address and a generic user agent. A report leaves the phone only when you copy, share or post it yourself.</string>
-    <string name="appsettings_privacy_text_offline">Nothing leaves your network. The app talks only to the TV you pick and makes no internet requests of its own. A report leaves the phone only when you copy, share or post it yourself.</string>
+    <string name="appsettings_privacy_text">The phone goes online for two things only: downloads from github.com, and today\'s prayer times from JAKIM (www.e-solat.gov.my), which get only your prayer zone code. Both see your phone\'s address and a generic user agent. With prayer times or the changing wallpaper on, the TV\'s home screen also asks e-Solat for the year\'s times and Bing for the week\'s pictures. A report leaves the phone only when you copy, share or post it yourself.</string>
+    <string name="appsettings_privacy_text_offline">The phone goes online for one thing only: today\'s prayer times from JAKIM (www.e-solat.gov.my), which get only your prayer zone code, and only while prayer times are on. With prayer times or the changing wallpaper on, the TV\'s home screen also asks e-Solat for the year\'s times and Bing for the week\'s pictures. A report leaves the phone only when you copy, share or post it yourself.</string>
     <string name="appsettings_report">Report a problem</string>
     <string name="appsettings_report_note">See the report first, then share it or post it on GitHub</string>
     <string name="appsettings_reset_key">Reset my key</string>
@@ -293,6 +293,7 @@
     <string name="dash_by">by Ajim</string>
     <string name="dash_stat_off">switched off</string>
     <string name="dash_stat_dock">in the dock</string>
+    <string name="dash_stat_back">came back on</string>
     <string name="dash_stat_restore">restore point</string>
     <string name="dash_prayer">Prayer times</string>
     <string name="dash_prayer_off">Off</string>
