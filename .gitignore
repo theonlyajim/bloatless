@@ -24,3 +24,6 @@ __pycache__/
 # local release signing (build-logic ReleaseSigning): never committed
 keystore.properties
 *.jks.properties
+
+# apksigner v4 side files
+*.idsig

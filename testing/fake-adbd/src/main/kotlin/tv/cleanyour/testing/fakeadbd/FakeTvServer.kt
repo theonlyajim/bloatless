@@ -145,4 +145,4 @@ fun main(args: Array<String>) {
 }
 
 // The signer the app pins for both bundled APKs (core/trust Pins.kt: the debug key for now).
-private const val BUNDLED_SIGNER = "b66cbe08b17a834dd145822109d5be0981b4fc077efe5a177ef3d6f3e455b724"
+private const val BUNDLED_SIGNER = "2358ee3e6a924cc3504a64d0a6a60c1d430de94831f4aa3e51700fae08047f06"

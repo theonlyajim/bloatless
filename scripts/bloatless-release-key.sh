@@ -44,8 +44,9 @@ echo "Building the TV launcher..."
 (cd "$ROOT/tv/launcher" && ./gradlew assembleRelease --console=plain -q)
 ASSETS="$ROOT/android/platform/src/main/assets/bundled"
 TMP="$(mktemp -d)"
+# The key's password is the keystore's (one file, read once: apksigner reads a password file line by line).
 sign() { "$BT/zipalign" -f -p 4 "$1" "$TMP/a.apk"; "$BT/apksigner" sign --ks "$JKS" --ks-pass "file:$PASS" --ks-key-alias "$ALIAS" \
-  --key-pass "file:$PASS" --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled true --out "$2" "$TMP/a.apk"; }
+  --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled true --out "$2" "$TMP/a.apk"; }
 sign "$ROOT/tv/launcher/app/build/outputs/apk/release/app-release.apk" "$ASSETS/cleanyourtv-launcher.apk"
 sign "$ASSETS/cleanyourtv-curtain.apk" "$TMP/curtain.apk" && cp "$TMP/curtain.apk" "$ASSETS/cleanyourtv-curtain.apk"
 rm -rf "$TMP"
