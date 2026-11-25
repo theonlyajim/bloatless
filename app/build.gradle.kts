@@ -3,14 +3,16 @@ plugins {
     id("cleanyourtv.serialization")
 }
 
+// Bloatless: the APKs are named bloatless-<version>-<store>-<type>.apk.
+base { archivesName.set("bloatless-1.0.0") }
+
 android {
     // The app's version, in one place for every store flavour and for F-Droid's checkupdates
     // (STORES-PLAN 0 and 3): GitHub, F-Droid and Google Play ship the same versionCode and versionName.
     defaultConfig {
-        // The 0.4.8 release: code 30 installs over the test builds 0.4.8-beta1 and beta2 (28, 29), 0.4.7 (27)
-        // and every earlier build with the same key.
-        versionCode = 30
-        versionName = "0.4.8"
+        // Bloatless 1.0.0 (code 100: above every upstream build, so it always installs over a test build).
+        versionCode = 100
+        versionName = "1.0.0"
     }
     // STORES-PLAN 1: one codebase, two store builds, the same applicationId and signing certificate.
     // `full` (GitHub and F-Droid) checks GitHub for a newer release and offers the optional add-ons;

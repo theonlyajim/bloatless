@@ -83,4 +83,4 @@ PY
 
 echo "Checking the pins and building the signed release..."
 (cd "$ROOT" && ./gradlew :core:trust:test :core:probe:test :app:assembleFullRelease --console=plain -q)
-echo "Done: $ROOT/app/build/outputs/apk/full/release/app-full-release.apk"
+echo "Done: $ROOT/app/build/outputs/apk/full/release/bloatless-1.0.0-full-release.apk"
