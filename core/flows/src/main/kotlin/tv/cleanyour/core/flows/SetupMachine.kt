@@ -26,6 +26,9 @@ import tv.cleanyour.core.engine.InstallStorage
 import tv.cleanyour.core.engine.PauseReason
 import tv.cleanyour.core.engine.RunState
 import tv.cleanyour.core.engine.RunStatus
+import tv.cleanyour.core.model.Module
+import tv.cleanyour.core.model.ModuleVersion
+import tv.cleanyour.core.registry.FetchResult
 import tv.cleanyour.core.engine.StartRefusal
 import tv.cleanyour.core.engine.StartResult
 import tv.cleanyour.core.model.AdbError
@@ -168,6 +171,10 @@ data class SetupExtras(
     // the launcher's ThemeProvider) did not reach the TV while the new home screen took over (the
     // look's steps CONTINUE); Done says so and the choice is saved for the Look sheet.
     val doneLookFailed: Boolean = false,
+    // Bloatless 1.0.6: the apps the Customise sheet offers under "Apps to add" (empty hides the group),
+    // and on Done the chosen ones while they are added; Finish waits until none is still busy.
+    val offeredApps: List<AppOffer> = emptyList(),
+    val doneApps: List<AppInstall> = emptyList(),
     // 0.4.7 (HomeKept): the TV's brand as its facts say it, for the TV_REFUSES reason; which rows of
     // the plan are the TV's own home screen or its setup wizard (the Customise sheet's words for
     // them); PatchWall when it is on the TV, and whether keeping it on would keep the TV's own home
@@ -253,6 +260,8 @@ class SetupDeps(
     val savedWifi: SavedWifiOwners? = prober as? SavedWifiOwners,
     // STORES-PLAN 1: without add-ons (the Play build) Done offers no "Add a card".
     val store: StoreRules = StoreRules.FULL,
+    // Bloatless 1.0.6: the apps "Apps to add" offers (SetupApps), from the shipped module index; null offers none.
+    val apps: SetupApps? = null,
     // 0.3.2 B1: where the home screen switch decision is kept for the TV report; null keeps none.
     val homeDecisions: HomeDecisions? = null,
     // Test build: candidate lists (CandidateLists); null, or a build without them, never offers one.
@@ -548,6 +557,9 @@ class SetupMachine(
             is SetupIntent.KeepDebuggingOn -> editDraft { it.copy(keepDebuggingOn = event.on) }
             is SetupIntent.ShowOnTv -> editDraft { it.copy(curtain = event.on) }
             is SetupIntent.HomeHelper -> if (deps.homeHelper) editDraft { it.copy(homeHelper = event.on) }
+            is SetupIntent.AddApp -> if (mutableExtras.value.offeredApps.any { it.id == event.id }) {
+                editDraft { d -> d.copy(apps = if (event.on) d.apps + event.id else d.apps - event.id) }
+            }
             SetupIntent.MakeItClean -> if (after is SetupState.Found && !mutableExtras.value.starting) {
                 mutableExtras.update { it.copy(starting = true) }
                 scope.launch {
@@ -575,7 +587,7 @@ class SetupMachine(
             SetupIntent.SendLookAgain -> if (after is SetupState.Done && mutableExtras.value.doneShot != null) effect(SetupEffect.Navigate("home/${after.tvId.value}/again"))
             SetupIntent.SaveRestoreNote -> scope.launch { restoreNote() }
             SetupIntent.AddCard -> if (deps.store.addOns) tvIdOf(after)?.let { effect(SetupEffect.Navigate("modules/${it.value}")) }
-            SetupIntent.Finish -> if (after is SetupState.Done && mutableExtras.value.finishing == null) scope.launch { finish(after.tvId) }
+            SetupIntent.Finish -> if (after is SetupState.Done && mutableExtras.value.finishing == null && !appsBusy()) scope.launch { finish(after.tvId) }
             // 0.4.7 (UX finding 5, PM 7): "Done" on a plan with nothing to switch off and the TV's
             // own home screen kept: no credential prompt, no empty run; the draft ends here.
             SetupIntent.LeaveAsIs -> if (after is SetupState.Found && !mutableExtras.value.starting && mutableExtras.value.finishing == null) scope.launch { leaveAsIs(after.tvId) }
@@ -1055,7 +1067,7 @@ class SetupMachine(
                         dockColumns = columns, look = sheet, ownPicture = own, ownDim = saved?.dim ?: OwnPicture.DEFAULT_DIM,
                         newPicture = photo?.ref, newDim = photo?.dim ?: OwnPicture.DEFAULT_DIM, waiting = DockLayers.waiting(kept.size, columns),
                         brand = LogCodes.clean(deviceFacts?.brand ?: snap.facts.brand, 40), homeRoles = roles, patchWall = patchWall, patchWallHoldsHome = holds,
-                        reportSentAtMs = sent?.atMs)
+                        reportSentAtMs = sent?.atMs, offeredApps = offeredApps(snap.facts))
                 }
                 send(Ev.PlanReady(record.id, r.plan, draft.level))
             }
@@ -1331,6 +1343,7 @@ class SetupMachine(
         // Done says so, and the choice is saved anyway so the Look sheet opens on it and "Put it on
         // the TV" sends it again. The same steps as the log's and the report's "look not sent" line.
         val lookFailed = homeOn && skipped.any { RunLines.isLookSend(it) }
+        val chosenApps = record.wizard?.apps.orEmpty()   // Bloatless 1.0.6: read before the draft ends below
         val done = record.copy(
             wizard = null,
             launcher = if (homeOn) LauncherState(launcher.versionCode, launcher.signer, digest ?: record.launcher?.overlayDigest, digest ?: record.launcher?.ourOverlayDigest)
@@ -1387,7 +1400,63 @@ class SetupMachine(
             if (homeOn && !lookFailed && setupHome?.digest?.let { it == digest } == true) {
                 attempt { deps.prober.screenshot(s) }.getOrNull()?.let { png -> mutableExtras.update { it.copy(doneShot = png) } }
             }
+            // Bloatless 1.0.6: the apps ticked under "Apps to add", one by one, while debugging is still on.
+            if (chosenApps.isNotEmpty() && f?.status != RunStatus.ABANDONED) installApps(done, s, chosenApps)
         }
+    }
+
+    // Bloatless 1.0.6: "Apps to add". Not in the Play build, not on a TV that refuses installs.
+    private fun offeredApps(facts: DeviceFacts): List<AppOffer> =
+        if (!deps.store.addOns || facts.installRefusal) emptyList()
+        else deps.apps?.let { a -> runCatching { a.offered(facts) }.getOrDefault(emptyList()) }.orEmpty()
+
+    private fun appsBusy(): Boolean = mutableExtras.value.doneApps.any { it.step in BUSY_APP_STEPS }
+
+    private suspend fun installApps(record: Tv, s: TvSession, chosen: Set<String>) {
+        val apps = deps.apps ?: return
+        val facts = deps.snapshots.latest(record.id)?.facts ?: record.facts
+        val list = SetupApps.IDS.filter { it in chosen }
+            .mapNotNull { id -> apps.module(id)?.let { m -> SetupApps.best(m, facts)?.let { v -> m to v } } }
+        if (list.isEmpty()) return
+        fun set(id: String, step: AppStep, percent: Int = 0) =
+            mutableExtras.update { e -> e.copy(doneApps = e.doneApps.map { if (it.id == id) it.copy(step = step, percent = percent) else it }) }
+        mutableExtras.update { it.copy(doneApps = list.map { (m, _) -> AppInstall(m.id, m.name, AppStep.WAITING) }) }
+        for ((m, v) in list) {
+            val end = attempt { installApp(record, s, apps, m, v) { step, p -> set(m.id, step, p) } }
+                .getOrElse { deps.log.line("setup: ${m.id} not added (${it.javaClass.simpleName})"); AppStep.FAILED }
+            set(m.id, end, 100)
+            deps.log.line("setup: app ${m.id} ${end.name.lowercase()}")
+        }
+        attempt { deps.snapshots.save(deps.runner.freshSnapshot(s)) }
+    }
+
+    // The steps of Manage's "Add to TV" (ModulesMachine.install): the download checked by size and sha256
+    // while it streams, the signer, package and version checked on the phone, then the AddModule plan.
+    private suspend fun installApp(record: Tv, s: TvSession, apps: SetupApps, m: Module, v: ModuleVersion, progress: (AppStep, Int) -> Unit): AppStep {
+        val have = deps.snapshots.latest(record.id)?.packages?.get(m.pkg)
+        if (have != null && have.versionCode >= v.versionCode) return AppStep.ALREADY
+        progress(AppStep.DOWNLOADING, 0)
+        val blob = when (val f = apps.fetcher.fetch(v.artifact) { done, total -> progress(AppStep.DOWNLOADING, if (total > 0) (done * 100 / total).toInt() else 0) }) {
+            is FetchResult.Ok -> f.blob
+            is FetchResult.Failed -> { deps.log.line("setup: ${m.id} download failed: ${f.failure}"); return AppStep.FAILED }
+        }
+        progress(AppStep.CHECKING, 0)
+        val info = attempt { apps.inspector.inspect(blob) }.getOrNull()
+        if (info == null || info.pkg != m.pkg || info.signer != v.artifact.signer || info.sha256 != v.artifact.sha256 || info.versionCode != v.versionCode) {
+            deps.log.line("setup: ${m.id} is not the file the index names"); return AppStep.FAILED
+        }
+        progress(AppStep.INSTALLING, 0)
+        val snapshot = deps.runner.freshSnapshot(s)
+        val plan = when (val r = deps.runner.plan(record, PlanRequest.AddModule(m, v, blob, null, null), snapshot)) {
+            is PlanResult.Ok -> r.plan
+            is PlanResult.Refused -> { deps.log.line("setup: ${m.id} refused: ${r.reasons.joinToString("; ")}"); return AppStep.FAILED }
+        }
+        if (plan.steps.isEmpty()) return AppStep.ALREADY
+        val outcome = deps.runner.run(record, plan, s, onStarted = { deps.sessionEnd.touched(record.id) }) { st ->
+            if (st is RunState.Running) progress(AppStep.INSTALLING, st.percent)
+        }
+        if (outcome is RunOutcome.Paused) { attempt { deps.engine.abandon(record.id) }; return AppStep.FAILED }
+        return if (outcome is RunOutcome.Finished && outcome.state.status != RunStatus.ROLLED_BACK && outcome.state.status != RunStatus.ABANDONED) AppStep.ADDED else AppStep.FAILED
     }
 
     // 0.4.8 (Restarts): the TV's Home and its boot_id, on a TV this app switched (or gave the helper); the read counts a
@@ -2064,3 +2133,5 @@ internal fun stopKeys(case: StopCase): StopKeys = when (case) {
     StopCase.TV_NOT_SUPPORTED -> StopKeys(CopyKey.STOP_TV_NOT_SUPPORTED_TITLE, CopyKey.STOP_TV_NOT_SUPPORTED_BODY, CopyKey.STOP_TV_NOT_SUPPORTED_PRIMARY, null)
     StopCase.TV_REFUSES_HOME, StopCase.PAIRING_NEEDED -> StopKeys(CopyKey.STOP_HOME_UNKNOWN_TITLE, CopyKey.STOP_HOME_UNKNOWN_BODY, CopyKey.STOP_HOME_UNKNOWN_SECONDARY, null)
 }
+
+private val BUSY_APP_STEPS = setOf(AppStep.WAITING, AppStep.DOWNLOADING, AppStep.CHECKING, AppStep.INSTALLING)

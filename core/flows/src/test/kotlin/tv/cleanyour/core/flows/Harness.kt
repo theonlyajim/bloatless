@@ -126,7 +126,7 @@ class Harness(val clock: FakeClock = FakeClock(Samples.NOW_MS), val facts: tv.cl
                   themes: tv.cleanyour.core.spec.ThemeSource = this.themes,
                   sessions: tv.cleanyour.core.session.SessionManager = this.sessions,
                   wrongFocus: (tv.cleanyour.core.model.TvId) -> tv.cleanyour.core.model.Component? = { null },
-                  homeHelper: Boolean = false) = SetupDeps(
+                  homeHelper: Boolean = false, apps: SetupApps? = null) = SetupDeps(
         discovery, sessions, prober, profiles, facts, runner, engine, gate, tvs, snapshots, ledger,
         FakeLauncherPin(Samples.launcherArtifact()), themes, restorePoint, FakeRestoreNote(), sessionEnd, access, clock, KeyCopy,
         blobs = blobs, dock = dock, screenLock = { true }, diagnostics = diagnostics,
@@ -143,6 +143,7 @@ class Harness(val clock: FakeClock = FakeClock(Samples.NOW_MS), val facts: tv.cl
         documents = documents,
         wrongFocus = wrongFocus,
         homeHelper = homeHelper,
+        apps = apps,
     )
 
     fun setup(scope: CoroutineScope, start: SetupStart = SetupStart.Fresh, store: StoreRules = StoreRules.FULL) = SetupMachine(setupDeps(store = store), scope, start)

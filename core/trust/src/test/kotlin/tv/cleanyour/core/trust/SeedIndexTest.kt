@@ -19,8 +19,17 @@ class SeedIndexTest {
     @Test fun seedVerifiesAgainstTheCompiledRoot() {
         val verdict = TrustRoots.indexVerifier().verify(index, indexSig, keys, keysSig, null, MinisignIndexVerifier.VERIFY_IGNORING_EXPIRY)
         val ok = verdict as? IndexVerdict.Ok ?: error("seed does not verify: $verdict")
-        assertEquals(2, ok.index.sequence)
-        val retro = ok.index.modules.single()
+        assertEquals(3, ok.index.sequence)
+        // Bloatless: Retro as upstream shipped it, plus the apps Setup offers (tools/bloatless-index/apps.json).
+        assertEquals(listOf("localsend", "nuvio", "retro", "smarttube"), ok.index.modules.map { it.id }.sorted())
+        for (m in ok.index.modules.filter { it.id != "retro" }) {
+            assertEquals(Tier.COMMUNITY, m.tier)
+            assertEquals(listOf("armeabi-v7a"), m.versions.single().abis)
+            assertTrue(m.versions.single().artifact.url.startsWith("https://github.com/"))
+        }
+        val smarttube = ok.index.modules.single { it.id == "smarttube" }.versions.single()
+        assertEquals(Sha256("109735aa24fe85e2e1623ebb3b1ecc4bf4263f4c6374e4411d646bfa2eda482a"), smarttube.artifact.signer)
+        val retro = ok.index.modules.single { it.id == "retro" }
         assertEquals("retro", retro.id)
         assertEquals(PackageName("io.github.udhaykumarbala.retro"), retro.pkg)
         assertEquals(Tier.COMMUNITY, retro.tier)
@@ -39,8 +48,8 @@ class SeedIndexTest {
     @Test fun shippedKeysMatchTheCompiledFloorAndListOneActiveKey() {
         val k = (TrustRoots.indexVerifier().verifyKeys(keys, keysSig) as MinisignIndexVerifier.KeysVerdict.Ok).keys
         assertEquals(TrustRoots.BUNDLED_KEYS_SEQUENCE, k.sequence)
-        assertEquals(listOf("0190B42669E69FB0"), k.keys.active.map { Ed25519Minisign.keyIdHex(it.id) })
-        assertEquals("692E33AEFDE19BC1", Ed25519Minisign.keyIdHex(TrustRoots.indexRoot.id))
+        assertEquals(listOf("BB183904B6D901CC"), k.keys.active.map { Ed25519Minisign.keyIdHex(it.id) })
+        assertEquals("78600C6A9B69F0C3", Ed25519Minisign.keyIdHex(TrustRoots.indexRoot.id))
         assertEquals(TrustRoots.BUNDLED_KEYS_SEQUENCE, KeysFile.peekSequence(keys))
     }
 
@@ -51,8 +60,10 @@ class SeedIndexTest {
         assertTrue(text.contains("trusted comment: ") && text.contains("file:index.json"))
     }
 
-    @Test fun seedExpiresNinetyDaysAfterItWasSigned() {
+    // Bloatless: a year, not 90 days. The app reads only the index it ships with (no online index), so
+    // the expiry is how long a build may add apps; a new release brings a new index.
+    @Test fun seedExpiresAYearAfterItWasSigned() {
         val doc = IndexDocument.parse(index)
-        assertEquals(90L * 24 * 3600 * 1000, doc.expiresAtMs - doc.generatedAtMs)
+        assertEquals(365L * 24 * 3600 * 1000, doc.expiresAtMs - doc.generatedAtMs)
     }
 }

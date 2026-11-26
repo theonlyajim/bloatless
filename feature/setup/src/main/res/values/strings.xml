@@ -191,6 +191,10 @@
     <string name="customise_group_tv">On the TV</string>
     <string name="customise_show_on_tv">Show the progress on the TV</string>
     <string name="customise_show_on_tv_note">The TV shows each step while we work</string>
+    <!-- Bloatless 1.0.6: Apps to add, nothing switched on by default; each is a module of the shipped index. -->
+    <string name="customise_group_apps">Apps to add</string>
+    <string name="customise_app_subtitle">{line}. About {size} MB.</string>
+    <string name="customise_apps_note">Each app comes from its own GitHub release and is checked before it goes on the TV. They are added after the clean-up.</string>
     <string name="customise_group_afterwards">Afterwards</string>
     <string name="customise_keep_debugging">Keep debugging on</string>
     <string name="customise_keep_debugging_warning">Others on your Wi-Fi could ask to connect</string>
@@ -369,6 +373,15 @@
     <string name="done_restore_saved">Restore point saved on this phone ({date})</string>
     <!-- beta3: a later run; the restore point is the one from the first Setup, which Undo everything goes back to -->
     <string name="done_restore_earlier">Restore point on this phone (from {date})</string>
+    <!-- Bloatless 1.0.6: the apps chosen under Apps to add, while they are added and how it ended. -->
+    <string name="done_app_waiting">{name}: waiting</string>
+    <string name="done_app_downloading">{name}: downloading, {percent}%</string>
+    <string name="done_app_checking">{name}: checking the file</string>
+    <string name="done_app_installing">{name}: adding to the TV, {percent}%</string>
+    <string name="done_app_added">{name} added to the TV</string>
+    <string name="done_app_already">{name} is already on the TV</string>
+    <string name="done_app_failed">{name} couldn\'t be added. Try again later from Cards and modules.</string>
+    <string name="done_finish_apps">Adding apps…</string>
     <string name="done_debug_note">Debugging on the TV switches off when you tap Finish. Next time, switch it on again with the remote.</string>
     <string name="done_debug_kept">Debugging on the TV stays on, as you chose</string>
     <string name="done_skipped">{name} wouldn\'t switch off; it\'s harmless.</string>

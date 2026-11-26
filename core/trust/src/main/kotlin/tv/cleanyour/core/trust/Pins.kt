@@ -7,13 +7,14 @@ import tv.cleanyour.core.store.BlobStore
 
 // Trust anchors compiled into the app. Changing one is a reviewed code change, never a data file.
 object TrustRoots {
-    // Root of the module index chain: signs keys.json only (KeysFile). Release key K2R, generated
-    // 2026-10-20 for 0.1.0; it replaced the development keys of K2, which never signed a public
-    // build. The private half stays offline with the maintainer (docs/history/DECISIONS-W5.md, K2R).
-    const val INDEX_ROOT_PUBLIC_KEY = "RWTBm+H9rjMuaX944TBay7uDMxQEC8Q+E8yF1p7hyGl7Fa+8bzBKE4io"   // key id 692E33AEFDE19BC1
+    // Root of the module index chain: signs keys.json only (KeysFile). Bloatless 1.0.6: Bloatless's own
+    // root, generated 2026-11-27 (scripts/BloatlessMinisign.java), so Bloatless can sign the apps it
+    // offers; upstream's K2R root (692E33AEFDE19BC1) is not ours to sign with. The private half stays
+    // on the maintainer's machine (~/.bloatless/index), never in the repo (tools/bloatless-index/make.py).
+    const val INDEX_ROOT_PUBLIC_KEY = "RWTD8GmbagxgeA7CKRIIKIleybsy0O40ycptBI3GTMcgUy2xt4OBJLsh"   // key id 78600C6A9B69F0C3
 
     // The sequence of the keys.json bundled with this build: an older keys file is refused.
-    const val BUNDLED_KEYS_SEQUENCE = 1L
+    const val BUNDLED_KEYS_SEQUENCE = 2L
 
     val indexRoot: MinisignKey get() = Ed25519Minisign.parsePublicKey(INDEX_ROOT_PUBLIC_KEY)
 

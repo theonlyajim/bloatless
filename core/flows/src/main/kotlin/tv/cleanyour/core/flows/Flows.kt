@@ -70,6 +70,7 @@ sealed interface SetupIntent { data object Start : SetupIntent; data class PickT
     data class StopAction(val action: tv.cleanyour.core.flows.StopAction) : SetupIntent; data object RejectIdentity : SetupIntent   // RFC-W8-1 (accepted)
     data class ShowOnTv(val on: Boolean) : SetupIntent   // RFC-CURTAIN-1: the Customise switch "Show the progress on the TV"
     data class HomeHelper(val on: Boolean) : SetupIntent   // RFC-HELPER-1 (test build): the Customise switch "Home button helper", on only after its consent
+    data class AddApp(val id: String, val on: Boolean) : SetupIntent   // Bloatless 1.0.6: a switch under "Apps to add" on the Customise sheet
     // 0.4.8: Done after the restart check: "Tell us it worked" (the confirmation's preview), "Report a problem" after a
     // restart that failed (`title`: the line as shown), and "Not right? Send it again" under the TV's screenshot.
     data object TellUsItWorked : SetupIntent; data class ReportRestartFailed(val title: String) : SetupIntent; data object SendLookAgain : SetupIntent

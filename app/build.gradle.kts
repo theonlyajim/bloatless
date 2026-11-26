@@ -4,15 +4,15 @@ plugins {
 }
 
 // Bloatless: the APKs are named bloatless-<version>-<store>-<type>.apk.
-base { archivesName.set("bloatless-1.0.5") }
+base { archivesName.set("bloatless-1.0.6") }
 
 android {
     // The app's version, in one place for every store flavour and for F-Droid's checkupdates
     // (STORES-PLAN 0 and 3): GitHub, F-Droid and Google Play ship the same versionCode and versionName.
     defaultConfig {
-        // Bloatless 1.0.2 (code 102; 1.0.0 was 100, above every upstream build). 1.0.2: replacing an old launcher removes it for every Android user. 1.0.3: the TV's own home screen comes back on in every profile first. 1.0.4: launcher 3.0.3, the azan plays as a foreground service. 1.0.5: the TV list link opens ajimverse.com/bloatless/tvs.
-        versionCode = 105
-        versionName = "1.0.5"
+        // Bloatless 1.0.2 (code 102; 1.0.0 was 100, above every upstream build). 1.0.2: replacing an old launcher removes it for every Android user. 1.0.3: the TV's own home screen comes back on in every profile first. 1.0.4: launcher 3.0.3, the azan plays as a foreground service. 1.0.5: the TV list link opens ajimverse.com/bloatless/tvs. 1.0.6: Apps to add (Nuvio, SmartTube, LocalSend) and Bloatless's own module index key.
+        versionCode = 106
+        versionName = "1.0.6"
     }
     // STORES-PLAN 1: one codebase, two store builds, the same applicationId and signing certificate.
     // `full` (GitHub and F-Droid) checks GitHub for a newer release and offers the optional add-ons;

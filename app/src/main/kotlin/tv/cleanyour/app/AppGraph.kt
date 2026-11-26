@@ -206,6 +206,7 @@ class AppGraph(context: Context, val appVersion: String = versionOf(context), va
         homePrefs = homePrefs,
         curtainPin = curtainPin,   // RFC-CURTAIN-1
         store = store.rules,       // STORES-PLAN 1
+        apps = if (store.rules.addOns) tv.cleanyour.core.flows.SetupApps(registry, fetcher, inspector) else null,   // Bloatless 1.0.6: Apps to add
         homeDecisions = homeDecisions,   // 0.3.2 B1
         candidates = tv.cleanyour.core.flows.BundledCandidateLists(profiles, candidateChoices),   // test build
         about = about, connectDetail = { sessions.lastConnectFailure },   // 0.3.6: "Copy error"

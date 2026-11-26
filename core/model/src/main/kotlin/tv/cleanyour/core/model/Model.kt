@@ -56,7 +56,9 @@ data class WizardDraft(val step: Int, val level: Level, val kept: Set<PackageNam
     // one; themeId, columns and picture stay for the legacy (0.4.0) form.
     val look: String? = null,
     // RFC-HELPER-1 (test build): the Customise switch "Home button helper", after its consent.
-    val homeHelper: Boolean = false)
+    val homeHelper: Boolean = false,
+    // Bloatless 1.0.6: the apps ticked under "Apps to add" (module ids, SetupApps.IDS), installed after the clean-up.
+    val apps: Set<String> = emptySet())
 
 sealed interface ConnectionState {
     data object Idle : ConnectionState

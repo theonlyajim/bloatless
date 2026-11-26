@@ -122,7 +122,9 @@ class SetupScreenshotTest(private val shot: Shot, private val variant: Variant) 
         // the list on purpose, and ATF measures a row it half covers by its visible part. Only the
         // touch target size check, only in that shot; the same rows are checked whole in the others.
         private fun suppressions(shot: Shot): Matcher<in AccessibilityViewCheckResult> =
-            if (shot.name == "customise_sheet_custom") AccessibilityCheckResultUtils.matchesChecks(Matchers.equalTo(TouchTargetSizeCheck::class.java))
+            // Bloatless 1.0.6: customise_sheet_apps draws the whole sheet unframed; at 200% font it runs past the
+            // 2000dp canvas and ATF measures the clipped last row. Its rows are checked whole in the other variants.
+            if (shot.name == "customise_sheet_custom" || shot.name == "customise_sheet_apps") AccessibilityCheckResultUtils.matchesChecks(Matchers.equalTo(TouchTargetSizeCheck::class.java))
             else Matchers.not(Matchers.anything())
 
         @JvmStatic

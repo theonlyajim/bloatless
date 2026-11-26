@@ -459,6 +459,18 @@ object SetupShots {
                 CustomiseContent(found(rowsPlan), customising.copy(dock = dockApps + otherApps.take(2)), NoSetupActions, rememberUndoSnackbarState(), {}, {}, initiallyOpen = emptyList())
             }
         },
+        // Bloatless 1.0.6: Apps to add, SmartTube switched on, the other groups closed.
+        Shot("customise_sheet_apps", 1500.dp) {
+            androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().background(CytTheme.colors.bg).padding(horizontal = 20.dp, vertical = 12.dp)) {
+                CustomiseContent(found(), customising.copy(
+                    offeredApps = listOf(
+                        tv.cleanyour.core.flows.AppOffer("nuvio", "Nuvio", "Movies and shows from the add-ons you choose", 53_572_219),
+                        tv.cleanyour.core.flows.AppOffer("smarttube", "SmartTube", "YouTube for the TV, without ads", 25_569_109),
+                        tv.cleanyour.core.flows.AppOffer("localsend", "LocalSend", "Send files from your phone to the TV", 39_516_499)),
+                    draft = customising.draft?.copy(apps = setOf("smarttube")), commands = emptyList()),
+                    NoSetupActions, rememberUndoSnackbarState(), {}, {}, initiallyOpen = emptyList())
+            }
+        },
         Shot("customise_sheet_custom") {
             Box(Modifier.fillMaxSize()) {
                 SheetFrame({ Setup(found(level = Level.CUSTOM)) }) {
@@ -666,6 +678,11 @@ object SetupShots {
 
         // S5 Done and the restart flow (D24, UX 4.8)
         Shot("done_home_on") { Setup(done()) },
+        // Bloatless 1.0.6: the apps chosen under Apps to add while they are added; Finish waits.
+        Shot("done_adding_apps", 1000.dp) { Setup(done(), connected.copy(doneApps = listOf(
+            tv.cleanyour.core.flows.AppInstall("nuvio", "Nuvio", tv.cleanyour.core.flows.AppStep.ADDED, 100),
+            tv.cleanyour.core.flows.AppInstall("smarttube", "SmartTube", tv.cleanyour.core.flows.AppStep.DOWNLOADING, 42),
+            tv.cleanyour.core.flows.AppInstall("localsend", "LocalSend", tv.cleanyour.core.flows.AppStep.WAITING)))) },
         Shot("done_restart_recommended") { Setup(done(recommended = true)) },
         // beta3 QA: a later run names the first restore point, the one Undo everything goes back to.
         Shot("done_restore_point_earlier") { Setup(done(restoreEarlier = true)) },

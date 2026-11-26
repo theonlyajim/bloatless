@@ -1,8 +1,12 @@
 {
-  "schema": 1,
-  "sequence": 1,
-  "generated": "2026-10-20T00:00:00Z",
-  "keys": [
-    {"id": "0190B42669E69FB0", "public_key": "RWSwn+ZpJrSQAVFh4LShyoAw9sg91tkJHa+d5BK9tfvO7MIk3gdKjC2j", "status": "active"}
-  ]
+ "schema": 1,
+ "sequence": 2,
+ "generated": "2026-11-26T17:28:52Z",
+ "keys": [
+  {
+   "id": "BB183904B6D901CC",
+   "public_key": "RWTMAdm2BDkYu7UOQWzuMBVjLn8/QFpwHwyKKUfslFcTuoie5boyIpnS",
+   "status": "active"
+  }
+ ]
 }

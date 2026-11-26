@@ -46,6 +46,8 @@ import java.util.Date
 import kotlinx.coroutines.delay
 import tv.cleanyour.core.engine.HomeOutcome
 import tv.cleanyour.core.engine.RunState
+import tv.cleanyour.core.flows.AppInstall
+import tv.cleanyour.core.flows.AppStep
 import tv.cleanyour.core.flows.AppChoice
 import tv.cleanyour.core.flows.ChipState
 import tv.cleanyour.core.flows.Confirmations
@@ -572,6 +574,20 @@ internal fun ColumnScope.CustomiseContent(
                 onClick = { actions.intent(SetupIntent.Open(Sheet.THEME)) })
         }
     }
+    // Bloatless 1.0.6: Apps to add. Every switch starts off; the person turns on what they want.
+    if (extras.offeredApps.isNotEmpty()) {
+        Overline(stringResource(R.string.customise_group_apps), Modifier.padding(start = 4.dp, top = 16.dp, bottom = 8.dp))
+        ListGroup {
+            extras.offeredApps.forEachIndexed { i, a ->
+                if (i > 0) ListDivider()
+                SwitchRow(
+                    a.name, a.id in extras.draft?.apps.orEmpty(), { actions.intent(SetupIntent.AddApp(a.id, it)) },
+                    subtitle = msg(R.string.customise_app_subtitle, "line" to a.oneLine, "size" to ((a.sizeBytes + 500_000) / 1_000_000).toInt()),
+                )
+            }
+        }
+        Body(stringResource(R.string.customise_apps_note), Modifier.padding(start = 4.dp, top = 8.dp))
+    }
     // UX finding 11: the curtain cannot install on an older Android, and a TV that refuses other
     // home screens refuses it too, so the row is not offered there.
     val curtainPossible = kept?.block != HomeBlock.OLD_ANDROID && kept?.block != HomeBlock.TV_REFUSES
@@ -883,9 +899,16 @@ fun DoneScreen(state: SetupState.Done, extras: SetupExtras, actions: SetupAction
         Glow.Done, modifier,
         topBar = { TopBar(extras) },
         bottomBar = {
+            // Bloatless 1.0.6: Finish switches debugging off, so it waits for the apps being added.
+            val appsBusy = extras.doneApps.any { it.step in setOf(AppStep.WAITING, AppStep.DOWNLOADING, AppStep.CHECKING, AppStep.INSTALLING) }
             PrimaryButton(
-                when (finishing) { Finishing.SWITCHING -> stringResource(R.string.done_finishing); Finishing.DONE -> stringResource(R.string.done_finished); null -> stringResource(R.string.done_finish) },
-                { actions.intent(SetupIntent.Finish) }, loading = finishing == Finishing.SWITCHING, enabled = finishing == null,
+                when {
+                    finishing == Finishing.SWITCHING -> stringResource(R.string.done_finishing)
+                    finishing == Finishing.DONE -> stringResource(R.string.done_finished)
+                    appsBusy -> stringResource(R.string.done_finish_apps)
+                    else -> stringResource(R.string.done_finish)
+                },
+                { actions.intent(SetupIntent.Finish) }, loading = finishing == Finishing.SWITCHING || appsBusy, enabled = finishing == null && !appsBusy,
             )
         },
     ) {
@@ -933,6 +956,13 @@ fun DoneScreen(state: SetupState.Done, extras: SetupExtras, actions: SetupAction
                 }),
                 state = if (finishing == Finishing.SWITCHING) CheckState.PENDING else CheckState.DONE,
             )
+        }
+        if (extras.doneApps.isNotEmpty()) Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (a in extras.doneApps) CheckLine(appLine(a), state = when (a.step) {
+                AppStep.ADDED, AppStep.ALREADY -> CheckState.DONE
+                AppStep.FAILED -> CheckState.NONE
+                else -> CheckState.PENDING
+            })
         }
         for (name in extras.doneKept) Body(msg(R.string.kept_tv_input, "name" to name), Modifier.padding(start = 4.dp, top = 12.dp))
         when {
@@ -1024,4 +1054,16 @@ private fun RestartCard(state: SetupState.Done, extras: SetupExtras, actions: Se
             }
         }
     }
+}
+
+// Bloatless 1.0.6: one line on Done for an app chosen under Apps to add.
+@Composable
+private fun appLine(a: AppInstall): String = when (a.step) {
+    AppStep.WAITING -> msg(R.string.done_app_waiting, "name" to a.name)
+    AppStep.DOWNLOADING -> msg(R.string.done_app_downloading, "name" to a.name, "percent" to a.percent)
+    AppStep.CHECKING -> msg(R.string.done_app_checking, "name" to a.name)
+    AppStep.INSTALLING -> msg(R.string.done_app_installing, "name" to a.name, "percent" to a.percent)
+    AppStep.ADDED -> msg(R.string.done_app_added, "name" to a.name)
+    AppStep.ALREADY -> msg(R.string.done_app_already, "name" to a.name)
+    AppStep.FAILED -> msg(R.string.done_app_failed, "name" to a.name)
 }
