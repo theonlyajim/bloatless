@@ -71,7 +71,7 @@ object PlannerFixtures {
         reason = reason,
     ).withSettings(mapOf(SettingKey.SCREENSAVER_ENABLED to "1", SettingKey.ADB_ENABLED to "1"))
 
-    fun installedLauncher(signer: Sha256 = artifact().signer, versionCode: Long = 1, enabled: EnabledState = EnabledState.ENABLED) =
+    fun installedLauncher(signer: Sha256? = artifact().signer, versionCode: Long = 1, enabled: EnabledState = EnabledState.ENABLED) =
         launcher.pkg to PackageState(enabled, false, versionCode, signer, false, false, "Clean Your TV Home", true)
 
     fun artifact(): LauncherArtifact = Samples.launcherArtifact()

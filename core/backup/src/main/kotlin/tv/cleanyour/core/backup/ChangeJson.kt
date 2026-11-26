@@ -81,7 +81,7 @@ object ChangeJson {
         put("type", typeOf(op))
         when (op) {
             is Op.Disable -> put("pkg", op.pkg.value)
-            is Op.Enable -> put("pkg", op.pkg.value)
+            is Op.Enable -> { put("pkg", op.pkg.value); if (op.everyUser) put("users", "all") }
             is Op.DefaultState -> put("pkg", op.pkg.value)
             is Op.Install -> {
                 put("apk", path(op.apk)); put("sha256", op.sha256.hex); put("pkg", op.pkg.value)
@@ -124,7 +124,7 @@ object ChangeJson {
 
     fun decodeOp(o: JsonObject): Op = when (val type = o.str("type")) {
         "disable" -> Op.Disable(o.pkg("pkg"))
-        "enable" -> Op.Enable(o.pkg("pkg"))
+        "enable" -> Op.Enable(o.pkg("pkg"), everyUser = (o["users"] as? kotlinx.serialization.json.JsonPrimitive)?.content == "all")
         "default_state" -> Op.DefaultState(o.pkg("pkg"))
         "install" -> Op.Install(
             decodePath(o.obj("apk")), o.sha("sha256"), o.pkg("pkg"), o.long("versionCode"), o.sha("signer"),

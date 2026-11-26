@@ -1404,7 +1404,7 @@ class SetupMachineTest {
     // plan's summary then carries replacesLauncher, which S3 shows above the button.
     @Test fun onlyALauncherUnderAnotherKeyIsReplaced() = runTest(timeout = 30.seconds) {
         val launcher = PackageName("com.gathin.tvhome")
-        for ((signer, replace) in listOf(Sha256("e".repeat(64)) to true, Samples.zeroHash to false, null to false)) {
+        for ((signer, replace) in listOf(Sha256("e".repeat(64)) to true, Samples.zeroHash to false, null to true)) {   // Bloatless: an unreadable signer is replaced too (a copy left for another profile)
             val h = Harness()
             h.sessions.allowPromptFor[HOST] = "AB:CD:7F:2A"
             h.prober.snapshotFor = { r ->

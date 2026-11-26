@@ -185,13 +185,30 @@ class PlannerTest {
         assertTrue(refused(setup(), snapshot = snap).single().contains("different key"))
         val p = plan(setup(choices = choices(replaceSigner = true)), snapshot = snap)
         val tail = ops(p).dropWhile { it is Op.Disable }
-        assertEquals(listOf("Settle", "Uninstall", "InstallStream"), tail.take(3).map { it::class.simpleName })
+        assertEquals(listOf("Settle", "Enable", "Uninstall", "InstallStream"), tail.take(4).map { it::class.simpleName })
+        assertTrue((tail[1] as Op.Enable).everyUser, "the TV's own home screen comes back for every profile first")
         assertTrue(p.summary.replacesLauncher)
         // Launcher v2.4.0 plan, finding 4: the uninstall erases the other launcher's look, order, app list and settings too.
         assertEquals("Replace the home screen app (its look, order, app list, settings and card answers on the TV are reset)", p.steps.first { it.op is Op.Uninstall }.narration)
         // Not while our launcher is HOME.
         val ours = snapshot(home = launcher, claimants = listOf(launcher, stock), extra = mapOf(installedLauncher(signer = other)))
         assertTrue(refused(setup(choices = choices(replaceSigner = true)), snapshot = ours).any { it.contains("D36") })
+    }
+
+    // Bloatless (PrismPlus 2KA report): a copy left for another Google TV profile, so its signer
+    // reads null. With consent and the stock home in charge it is removed first, for every user.
+    @Test fun anUnreadableSignerIsReplacedNotInstalledOver() {
+        val snap = snapshot(extra = mapOf(installedLauncher(signer = null)))
+        val p = plan(setup(choices = choices(replaceSigner = true)), snapshot = snap)
+        val tail = ops(p).dropWhile { it is Op.Disable }
+        assertEquals(listOf("Settle", "Enable", "Uninstall", "InstallStream"), tail.take(4).map { it::class.simpleName })
+        assertTrue((tail[1] as Op.Enable).everyUser, "the TV's own home screen comes back for every profile first")
+        assertEquals(listOf("'pm' 'uninstall' 'com.gathin.tvhome'"), p.steps.first { it.op is Op.Uninstall }.rendered.lines.map { it.text })
+        assertEquals(listOf("for u in \$(pm list users | sed -n 's/.*UserInfo{\\([0-9][0-9]*\\):.*/\\1/p'); do pm enable --user \"\$u\" '${stock.pkg.value}' >/dev/null 2>&1; done; true"),
+            p.steps.first { it.op is Op.Enable && (it.op as Op.Enable).everyUser }.rendered.lines.map { it.text })
+        // Without consent it stays the old install over it.
+        val plain = ops(plan(setup(), snapshot = snap)).dropWhile { it is Op.Disable }
+        assertTrue(plain.none { it is Op.Uninstall })
     }
 
     @Test fun stockLaunchersMatchByPackage() {

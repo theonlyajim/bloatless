@@ -36,7 +36,9 @@ data class Prior(val packageState: EnabledState? = null, val settingValue: Strin
 
 sealed interface Op {
     data class Disable(val pkg: PackageName) : Op
-    data class Enable(val pkg: PackageName) : Op
+    // Bloatless: `everyUser` switches it on for every Android user on the TV (each Google TV profile), so
+    // removing an old home screen app from all users never leaves a profile with no Home (black screen).
+    data class Enable(val pkg: PackageName, val everyUser: Boolean = false) : Op
     data class DefaultState(val pkg: PackageName) : Op
     data class Install(val apk: RemotePath, val sha256: Sha256, val pkg: PackageName, val versionCode: Long, val signer: Sha256, val flags: Set<InstallFlag>) : Op   // apk.dir must be TMP
     data class InstallStream(val blob: BlobRef, val sha256: Sha256, val pkg: PackageName, val versionCode: Long, val signer: Sha256) : Op

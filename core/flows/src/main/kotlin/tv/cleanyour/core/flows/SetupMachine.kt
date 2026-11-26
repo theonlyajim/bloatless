@@ -971,7 +971,7 @@ class SetupMachine(
             kept = draft.kept, extraOff = draft.extraOff, dock = dock,
             theme = theme,
             installLauncher = possible || helper, takeover = possible, homeHelper = helper,
-            replaceLauncherSigner = installed?.signer?.let { it != launcher.signer } ?: false,
+            replaceLauncherSigner = installed != null && installed.signer != launcher.signer,   // Bloatless: an unreadable signer too
             keepDebuggingOn = draft.keepDebuggingOn,
             wizardWifi = wifi,
         )

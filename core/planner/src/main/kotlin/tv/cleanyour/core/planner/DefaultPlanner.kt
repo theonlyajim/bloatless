@@ -495,11 +495,20 @@ class DefaultPlanner(
             if (snapshot.facts.sdk < TV_MIN_SDK) { refuse(REASON_OLD_ANDROID); return false }
             val current = state(artifact.pkg)
             val present = current != null
-            if (current != null && current.signer != null && current.signer != artifact.signer) {
+            // Bloatless: a copy whose signer cannot be read (no base.apk for user 0, as when it is installed
+            // only for another Google TV profile) is replaced the same way, while the TV's own home screen
+            // is in charge; an install over it would fail if its key is not ours. Elsewhere it stays an update.
+            val unreadable = current != null && current.signer == null && replaceSigner &&
+                snapshot.home.resolved.let { h -> h != null && stockLaunchers.any { it.pkg == h.pkg } }
+            if (unreadable || (current != null && current.signer != null && current.signer != artifact.signer)) {
                 if (!replaceSigner) { refuse("the home screen app on the TV was installed with a different key; replacing it needs consent (D36)"); return false }
                 val homeNow = snapshot.home.resolved
                 if (homeNow == null || stockLaunchers.none { it.pkg == homeNow.pkg }) { refuse("the home screen app can only be replaced while the TV's own home screen is in charge (D36)"); return false }
                 replacesLauncher = true
+                // Bloatless: the uninstall goes for every Android user, and another Google TV profile may have
+                // the old app as its Home with the TV's own switched off there: the TV's own home screens
+                // come back on for every user first, so no profile is left on a black screen.
+                stockLaunchers.map { it.pkg }.distinct().forEach { step(Op.Enable(it, everyUser = true), null, GROUP_LAUNCHER, "", FailurePolicy.CONTINUE) }
                 step(Op.Uninstall(artifact.pkg), Prior(present = true), GROUP_LAUNCHER, NARRATION_REPLACE_LAUNCHER, FailurePolicy.STOP_AND_ROLLBACK)
             } else if (current != null && current.versionCode >= artifact.versionCode && current.signer == artifact.signer) {
                 return false   // the pin (or a newer build of ours) is already installed

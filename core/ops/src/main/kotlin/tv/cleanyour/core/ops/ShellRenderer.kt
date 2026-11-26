@@ -48,7 +48,10 @@ class ShellRenderer(private val watchdogVariant: WatchdogVariant = WatchdogVaria
     private fun renderOrThrow(op: Op): Rendered = when (op) {
         is Op.Disable -> Rendered(op, lines(line(PM, "disable-user", USER, "0", writePkg(op.pkg))), null, Privilege.PROFILE_STEP,
             Op.Read(ProbeKind.DISABLED), T_PM, CAP_DEFAULT)
-        is Op.Enable -> Rendered(op, lines(line(PM, "enable", USER, "0", pkg(op.pkg))), null, Privilege.PROFILE_STEP,
+        is Op.Enable -> if (op.everyUser) {
+            Rendered(op, lines(ShellLine(EveryUserLines.enable(pkg(op.pkg)))), null, Privilege.PROFILE_STEP,
+                Op.Read(ProbeKind.DISABLED), T_PM, CAP_DEFAULT)
+        } else Rendered(op, lines(line(PM, "enable", USER, "0", pkg(op.pkg))), null, Privilege.PROFILE_STEP,
             Op.Read(ProbeKind.DISABLED), T_PM, CAP_DEFAULT)
         is Op.DefaultState -> Rendered(op, lines(line(PM, "default-state", USER, "0", writePkg(op.pkg))), null, Privilege.PROFILE_STEP,
             Op.Read(ProbeKind.PACKAGE_DUMP, ReadArg.Pkg(op.pkg)), T_PM, CAP_DEFAULT)
@@ -73,7 +76,11 @@ class ShellRenderer(private val watchdogVariant: WatchdogVariant = WatchdogVaria
             Rendered(op, emptyList(), Transfer.StreamInstall(op.blob, op.blob.size), Privilege.COMMUNITY,
                 Op.Read(ProbeKind.PACKAGE_DUMP, ReadArg.Pkg(pkgName(op.pkg))), T_INSTALL + op.blob.size / 50, CAP_DEFAULT)
         }
-        is Op.Uninstall -> Rendered(op, lines(line(PM, "uninstall", USER, "0", writePkg(op.pkg))), null, Privilege.PROFILE_STEP,
+        // Bloatless: every Uninstall is one of our own apps (launcher, curtain, modules), so it goes for
+        // every Android user. `--user 0` left it installed for a second Google TV profile (user 10):
+        // the list still named it, `pm path` for user 0 did not, and the next install over another
+        // signer's copy failed INSTALL_FAILED_UPDATE_INCOMPATIBLE (issues #2743, #1918, #1510 upstream).
+        is Op.Uninstall -> Rendered(op, lines(line(PM, "uninstall", writePkg(op.pkg))), null, Privilege.PROFILE_STEP,
             Op.Read(ProbeKind.PACKAGES), T_PM, CAP_DEFAULT)
         is Op.SettingsPut -> {
             val ns = op.key.ns.name.lowercase()
@@ -227,7 +234,7 @@ class ShellRenderer(private val watchdogVariant: WatchdogVariant = WatchdogVaria
             EnabledState.DEFAULT -> Op.DefaultState(op.pkg)
             EnabledState.DISABLED_USER, EnabledState.DISABLED -> null   // it was off before us
         }
-        is Op.Enable -> when (prior.packageState) {
+        is Op.Enable -> if (op.everyUser) null else when (prior.packageState) {   // Bloatless: never switched back off in other profiles
             EnabledState.DISABLED_USER, EnabledState.DISABLED -> Op.Disable(op.pkg)
             EnabledState.DEFAULT -> Op.DefaultState(op.pkg)
             null, EnabledState.ENABLED -> null   // it was on before us

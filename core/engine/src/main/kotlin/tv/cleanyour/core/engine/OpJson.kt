@@ -38,7 +38,7 @@ object OpJson {
     fun encode(op: Op): JsonObject = buildJsonObject {
         when (op) {
             is Op.Disable -> { put("v", "disable"); put("pkg", op.pkg.value) }
-            is Op.Enable -> { put("v", "enable"); put("pkg", op.pkg.value) }
+            is Op.Enable -> { put("v", "enable"); put("pkg", op.pkg.value); if (op.everyUser) put("users", "all") }
             is Op.DefaultState -> { put("v", "default_state"); put("pkg", op.pkg.value) }
             is Op.Install -> {
                 put("v", "install"); put("apk", path(op.apk)); put("sha256", op.sha256.hex); put("pkg", op.pkg.value)
@@ -91,7 +91,7 @@ object OpJson {
 
     fun decode(o: JsonObject): Op = when (val v = o.str("v")) {
         "disable" -> Op.Disable(pkg(o.str("pkg")))
-        "enable" -> Op.Enable(pkg(o.str("pkg")))
+        "enable" -> Op.Enable(pkg(o.str("pkg")), everyUser = (o["users"] as? kotlinx.serialization.json.JsonPrimitive)?.content == "all")
         "default_state" -> Op.DefaultState(pkg(o.str("pkg")))
         "install" -> Op.Install(path(o.obj("apk")), Sha256(o.str("sha256")), pkg(o.str("pkg")), o.long("versionCode"), Sha256(o.str("signer")),
             o.arr("flags").map { InstallFlag.valueOf(it.jsonPrimitive.content) }.toSet())
