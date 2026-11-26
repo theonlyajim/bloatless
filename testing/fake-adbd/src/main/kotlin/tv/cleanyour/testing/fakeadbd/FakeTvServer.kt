@@ -22,6 +22,18 @@ fun main(args: Array<String>) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val tv = Personas.miTv()
     tv.files["/proc/meminfo"] = "MemTotal:        1952344 kB\nMemFree:          312000 kB\nMemAvailable:     905000 kB\n".toByteArray()
+    // FAKE_TV_MODE=cleanyourtv: a TV set up by Clean Your TV's phone app first: its launcher (same package, its
+    // own key) is Home and the TV's own home screen is switched off.
+    if (System.getenv("FAKE_TV_MODE") == "cleanyourtv") {
+        tv.packages["com.gathin.tvhome"] = FakePackage("com.gathin.tvhome", "/data/app/com.gathin.tvhome-9/base.apk", "enabled", 9,
+            "576418154bec6505bfc709ccaa6ae85b6e09d98eb89f4a25147ca1b4b0505132")
+        tv.packages[tv.home.substringBefore('/')]?.state = "disabled-user"
+        tv.home = "com.gathin.tvhome/.MainActivity"
+        // Its APK, so the app reads its key as on a real TV (git show main:android/platform/src/main/assets/bundled/
+        // cleanyourtv-launcher.apk > build/cyt-upstream-launcher.apk).
+        File(root, "build/cyt-upstream-launcher.apk").takeIf { it.isFile }?.let { tv.files["/data/app/com.gathin.tvhome-9/base.apk"] = it.readBytes() }
+        println("Mode: Clean Your TV's launcher is Home")
+    }
 
     // The APKs the app streams: known by their bytes, as installApk expects.
     val bundled = File(root, "android/platform/src/main/assets/bundled")
@@ -40,6 +52,14 @@ fun main(args: Array<String>) {
         append("${components.size} activities found:\n")
         components.forEachIndexed { i, c ->
             append("  Activity #$i:\n    priority=${if (i == 0) 2 else 0} preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=true\n    $c\n")
+        }
+    }
+    // The signer read's copy (ProbeScripts.copyApk): the installed APK into the app's TMP folder, for a pull.
+    val copyApk = Regex("""pm path '?([A-Za-z0-9_.]+)'? \| grep base\.apk.* cp "\$\{p#package:\}" '?([^' ]+)'?$""")
+    tv.rawHandlers += { line ->
+        copyApk.find(line.trim())?.let { m ->
+            val bytes = tv.packages[m.groupValues[1]]?.path?.let { tv.files[it] }
+            if (bytes == null) ExecOutcome("", 1) else { tv.files[m.groupValues[2]] = bytes; ExecOutcome("") }
         }
     }
     // The install check's script (ProbeScripts.installedSha256): a pipe and $( ), which the fake shell leaves alone.

@@ -4,15 +4,15 @@ plugins {
 }
 
 // Bloatless: the APKs are named bloatless-<version>-<store>-<type>.apk.
-base { archivesName.set("bloatless-1.0.0") }
+base { archivesName.set("bloatless-1.0.1") }
 
 android {
     // The app's version, in one place for every store flavour and for F-Droid's checkupdates
     // (STORES-PLAN 0 and 3): GitHub, F-Droid and Google Play ship the same versionCode and versionName.
     defaultConfig {
-        // Bloatless 1.0.0 (code 100: above every upstream build, so it always installs over a test build).
-        versionCode = 100
-        versionName = "1.0.0"
+        // Bloatless 1.0.1 (code 101; 1.0.0 was 100, above every upstream build).
+        versionCode = 101
+        versionName = "1.0.1"
     }
     // STORES-PLAN 1: one codebase, two store builds, the same applicationId and signing certificate.
     // `full` (GitHub and F-Droid) checks GitHub for a newer release and offers the optional add-ons;

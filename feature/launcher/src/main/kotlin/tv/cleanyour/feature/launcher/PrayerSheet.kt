@@ -1,6 +1,8 @@
 package tv.cleanyour.feature.launcher
 
 import androidx.compose.foundation.layout.ColumnScope
+import tv.cleanyour.ui.design.component.BannerTone
+import tv.cleanyour.ui.design.component.Banner
 import tv.cleanyour.ui.design.theme.Glow
 import tv.cleanyour.ui.design.theme.CytTheme
 import tv.cleanyour.ui.design.component.ScreenTitle
@@ -139,6 +141,8 @@ fun PrayerScreen(state: HomeScreenState, onIntent: (HomeScreenIntent) -> Unit, o
     ScreenScaffold(Glow.Tv, modifier, topBar = { CytTopBar(onBack = onBack) }) {
         ScreenTitle(stringResource(R.string.prayer_title), Modifier.padding(top = 20.dp))
         Lead(stringResource(R.string.prayer_subtitle), Modifier.padding(top = 8.dp))
+        // Bloatless: the times show on Bloatless's home screen only; say so when this TV has another one.
+        if (state.notOnTv != null) Banner(stringResource(R.string.prayer_not_on_tv), BannerTone.WARNING, Modifier.padding(top = 16.dp))
         if (state.prayer.on) TodayCard(state.prayer.zone, state.prayerToday, Modifier.padding(top = 16.dp))
         PrayerContent(state.prayer, { onIntent(HomeScreenIntent.SetPrayer(it)) }, page = true, onLocate = onLocate)
         Gap(24.dp)

@@ -169,4 +169,7 @@
     <string name="prayer_locating">Finding your zone…</string>
     <string name="prayer_locate_note">Used once to pick the zone, then forgotten. Nothing is sent.</string>
     <string name="prayer_locate_failed">Couldn\'t tell the zone from here. Pick the state and zone below.</string>
+    <string name="home_changed_use_stock">Put the TV\'s own home screen back</string>
+    <string name="home_changed_use_stock_sub">Then Run Setup again: Bloatless replaces the other home screen with its own, with prayer times and themes.</string>
+    <string name="prayer_not_on_tv">Prayer times show on Bloatless\'s home screen, and this TV uses another one. Open Home screen to switch it; your choice here is kept for then.</string>
 </resources>

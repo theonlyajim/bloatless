@@ -84,7 +84,12 @@ fun HomeScreen(
     onReport: (String) -> Unit = {}, onOpenUrl: (String) -> Unit = {}, onOpenPrayer: (() -> Unit)? = null,
 ) {
     val notOnTv = state.notOnTv
-    if (notOnTv != null) { NotOnTvScreen(state.tvName, notOnTv, onIntent, onBack, modifier, onReport, onOpenUrl); return }
+    if (notOnTv != null) {
+        NotOnTvScreen(state.tvName, notOnTv, onIntent, onBack, modifier, onReport, onOpenUrl, canUseStock = state.stock != null && state.busy == null)
+        // Bloatless: the TV's own home screen back from here too (a home screen changed by another app, Clean Your TV's).
+        state.stockPreview?.let { plan -> CytBottomSheet({ onIntent(HomeScreenIntent.CancelPreview) }) { StockPreviewContent(plan, onIntent) } }
+        return
+    }
     var dockOpen by rememberSaveable { mutableStateOf(false) }
     var prayerOpen by rememberSaveable { mutableStateOf(false) }
     var placesOpen by rememberSaveable { mutableStateOf(false) }
@@ -225,7 +230,7 @@ fun HomeScreen(
 @Composable
 internal fun NotOnTvScreen(
     tvName: String, n: NotOnTv, onIntent: (HomeScreenIntent) -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier, onReport: (String) -> Unit = {},
-    onOpenUrl: (String) -> Unit = {},
+    onOpenUrl: (String) -> Unit = {}, canUseStock: Boolean = false,
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val action = when {
@@ -274,6 +279,14 @@ internal fun NotOnTvScreen(
             HomeBlock.NONE, null -> stringResource(R.string.home_not_on_tv_none)
         }
         Banner(why, BannerTone.INFO, Modifier.padding(top = 16.dp), icon = CytIcons.Info)
+        // Bloatless: another app's home screen (Clean Your TV's, most often) is Home. One tap puts the TV's own back;
+        // Run Setup again then replaces the other home screen with Bloatless's, prayer times and all.
+        if (n.reason == HomeBlock.HOME_CHANGED && canUseStock && !n.earlier) {
+            ListGroup(Modifier.padding(top = 16.dp)) {
+                ListRow(stringResource(R.string.home_changed_use_stock), subtitle = stringResource(R.string.home_changed_use_stock_sub),
+                    onClick = { onIntent(HomeScreenIntent.PreviewStock) })
+            }
+        }
         val next = when {
             n.helpAddTv -> R.string.home_not_on_tv_next_list
             !n.setupAgain -> null

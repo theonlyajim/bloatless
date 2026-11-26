@@ -1357,15 +1357,19 @@ internal object Staleness {
 
     fun diff(steps: List<Step>, snapshot: Snapshot): List<String> {
         val out = mutableListOf<String>()
+        // Bloatless: a package an earlier step of the run uninstalls (a home screen app signed with another key,
+        // D36) is absent for the install after it; the TV still has it now, which is the plan, not a change.
+        val uninstalledFirst = mutableSetOf<PackageName>()
         for (s in steps) {
+            (s.op as? Op.Uninstall)?.let { uninstalledFirst += it.pkg }
             val prior = s.prior ?: continue
             when (val op = s.op) {
                 is Op.Disable -> packageDiff(op.pkg, prior, snapshot, out)
                 is Op.Enable -> packageDiff(op.pkg, prior, snapshot, out)
                 is Op.DefaultState -> packageDiff(op.pkg, prior, snapshot, out)
                 is Op.Uninstall -> if (prior.present == true && op.pkg !in snapshot.packages) out += "${op.pkg.value}: was installed, now missing"
-                is Op.Install -> presentDiff(op.pkg, prior, snapshot, out)
-                is Op.InstallStream -> presentDiff(op.pkg, prior, snapshot, out)
+                is Op.Install -> if (op.pkg !in uninstalledFirst) presentDiff(op.pkg, prior, snapshot, out)
+                is Op.InstallStream -> if (op.pkg !in uninstalledFirst) presentDiff(op.pkg, prior, snapshot, out)
                 is Op.SettingsPut -> if (op.key in snapshot.settings) {
                     val now = snapshot.settings[op.key]
                     if (now != prior.settingValue) out += "${op.key.key}: was ${prior.settingValue ?: "unset"}, now ${now ?: "unset"}"
