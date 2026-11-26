@@ -27,6 +27,11 @@
     <!-- Bloatless: prayer times and the azan (Solat, AzanReceiver, AzanActivity), only with solat_zone in config.json. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Bloatless 3.0.3: exact alarms without a Settings switch on Android 13+ (granted at install), which
+         also lets the alarm start the azan's foreground service from the background. -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- Lets the azan card open over another app; granted over adb at install time. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
@@ -264,6 +269,12 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <!-- Bloatless 3.0.3: the azan's sound, so it plays when the card cannot open over another app. -->
+        <service
+            android:name=".AzanService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
 
         <activity
             android:name=".AzanActivity"

@@ -30,11 +30,11 @@ object PinnedLauncher {
     const val ASSET_NAME = "cleanyourtv-launcher.apk"
     const val UPSTREAM_COMMIT = "b06ab21105c49900cb1ed76b24414dba1e21d0db"
     const val PACKAGE = "com.gathin.tvhome"
-    const val VERSION_CODE = 11L
-    const val VERSION_NAME = "3.0.2"
-    const val SIZE = 1_527_733L
-    const val SHA256 = "aebf6e27346dc5c4cc0cca1c22d9bff19b58c494413a72909ba8ac8c476796c5"
-    // Bloatless: launcher 3.0.2 = upstream 3.0 plus JAKIM prayer times, the azan and the week's places, built from tv/launcher.
+    const val VERSION_CODE = 12L
+    const val VERSION_NAME = "3.0.3"
+    const val SIZE = 1_545_597L
+    const val SHA256 = "f5e57f3a6d8f0ba31102e7f0f0b7186524c75fd7a246b1dda0be7ae77b367893"
+    // Bloatless: launcher 3.0.3 = upstream 3.0 plus JAKIM prayer times, the azan (a foreground service since 3.0.3) and the week's places, built from tv/launcher.
     // Signed with the Bloatless release key (scripts/bloatless-release-key.sh).
     const val SIGNER_SHA256 = "2358ee3e6a924cc3504a64d0a6a60c1d430de94831f4aa3e51700fae08047f06"
 }

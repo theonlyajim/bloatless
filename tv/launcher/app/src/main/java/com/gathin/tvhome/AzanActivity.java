@@ -1,18 +1,10 @@
 package com.gathin.tvhome;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
-import android.media.AudioAttributes;
-import android.media.AudioFocusRequest;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -23,28 +15,25 @@ import android.widget.TextView;
 
 import androidx.core.content.res.ResourcesCompat;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 /**
- * Plays the azan over whatever is on screen, at the volume from config.json (azan_volume), with a small
- * glass card naming the prayer. Any button stops it; so does the end of the recording, or leaving it.
- * The volume the TV had before comes back afterwards, unless someone changed it meanwhile.
- *
- * The recordings are files/azan.mp3 and, for Subuh, files/azan_subuh.mp3 (falls back to azan.mp3).
+ * The azan's card: a small glass card naming the prayer, over whatever is on screen. The sound is
+ * AzanService's (Bloatless 3.0.3), so it plays even where Android keeps this card from opening over
+ * another app. Any button stops the azan; so does leaving the card. The card closes when the azan ends.
  */
 public final class AzanActivity extends Activity {
-    private static final long MAX_MS = 8 * 60_000L;
-
-    private final Handler handler = new Handler(Looper.getMainLooper());
-    private MediaPlayer player;
-    private AudioManager audio;
-    private AudioFocusRequest focus;
-    private int volumeBefore = -1, volumeSet = -1;
+    /** The card on screen; null otherwise. Main thread only. */
+    private static AzanActivity shown;
     private boolean done;
+
+    /** Closes the card, if it shows (the azan ended). */
+    static void close() {
+        if (shown != null) shown.end(false);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,63 +42,14 @@ public final class AzanActivity extends Activity {
         int index = getIntent().getIntExtra(Solat.EXTRA_INDEX, 1);
         if (index < 0 || index >= Solat.NAMES.length) index = 1;
         long at = getIntent().getLongExtra(Solat.EXTRA_AT, System.currentTimeMillis());
-
-        File dir = Config.dir(this);
-        File file = dir == null ? null : new File(dir, index == Solat.SUBUH ? "azan_subuh.mp3" : "azan.mp3");
-        if (file != null && !file.isFile() && dir != null) file = new File(dir, "azan.mp3");
-        // Bloatless: an azan.mp3 pushed to the TV wins; otherwise the recording built into the launcher.
-        if (file != null && !file.isFile()) file = null;
+        shown = this;
         buildCard(index, at);
-
-        audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        AudioAttributes attrs = new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                .build();
-        if (audio != null) {
-            // Other players pause while the azan plays, and carry on after.
-            focus = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-                    .setAudioAttributes(attrs)
-                    .setOnAudioFocusChangeListener(change -> { })
-                    .build();
-            audio.requestAudioFocus(focus);
-            int want = Config.load(this).azanVolume;
-            if (want >= 0) {
-                int max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-                volumeBefore = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-                volumeSet = Math.min(want, max);
-                try {
-                    audio.setStreamVolume(AudioManager.STREAM_MUSIC, volumeSet, 0);
-                } catch (SecurityException e) {
-                    volumeBefore = -1;
-                }
-            }
-        }
-        try {
-            player = new MediaPlayer();
-            player.setAudioAttributes(attrs);
-            if (file != null) {
-                player.setDataSource(file.getPath());
-            } else {
-                try (android.content.res.AssetFileDescriptor afd = getResources().openRawResourceFd(R.raw.azan)) {
-                    player.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
-                }
-            }
-            player.setOnCompletionListener(mp -> stop());
-            player.setOnErrorListener((mp, what, extra) -> {
-                Log.w(Solat.TAG, "player error " + what + "/" + extra);
-                stop();
-                return true;
-            });
-            player.setOnPreparedListener(MediaPlayer::start);
-            player.prepareAsync();
-        } catch (Exception e) {
-            Log.w(Solat.TAG, "can't play " + (file != null ? file : "built-in azan") + ": " + e);
-            stop();
-            return;
-        }
-        handler.postDelayed(this::stop, MAX_MS);
+        // The receiver could not start the sound: from here, in front, it can.
+        if (AzanService.current == null && !getIntent().getBooleanExtra(EXTRA_PLAYING, false)) AzanService.start(this, index, at);
     }
+
+    /** Set by AzanReceiver when the service was started. */
+    static final String EXTRA_PLAYING = "playing";
 
     private void buildCard(int index, long at) {
         float d = getResources().getDisplayMetrics().density;
@@ -166,44 +106,27 @@ public final class AzanActivity extends Activity {
     /** Any button stops the azan; the press goes no further. */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) stop();
+        if (event.getAction() == KeyEvent.ACTION_DOWN) end(true);
         return true;
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        stop();   // Home pressed, or another app came in front
+        end(true);   // Home pressed, or another app came in front
     }
 
     @Override
     protected void onDestroy() {
-        stop();
+        if (shown == this) shown = null;
         super.onDestroy();
     }
 
-    private void stop() {
+    private void end(boolean stopAzan) {
         if (done) return;
         done = true;
-        handler.removeCallbacksAndMessages(null);
-        if (player != null) {
-            try {
-                player.stop();
-            } catch (Exception ignored) {
-            }
-            player.release();
-            player = null;
-        }
-        if (audio != null) {
-            // Put the volume back, unless it was changed by hand while the azan played.
-            if (volumeBefore >= 0 && audio.getStreamVolume(AudioManager.STREAM_MUSIC) == volumeSet) {
-                try {
-                    audio.setStreamVolume(AudioManager.STREAM_MUSIC, volumeBefore, 0);
-                } catch (SecurityException ignored) {
-                }
-            }
-            if (focus != null) audio.abandonAudioFocusRequest(focus);
-        }
+        if (shown == this) shown = null;
+        if (stopAzan) AzanService.stopNow();
         if (!isFinishing()) finish();
         overridePendingTransition(0, 0);
     }

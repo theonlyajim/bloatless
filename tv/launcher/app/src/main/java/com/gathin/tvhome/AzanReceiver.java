@@ -27,18 +27,22 @@ public final class AzanReceiver extends BroadcastReceiver {
             Config cfg = Config.load(ctx);
             boolean wanted = cfg.azanOn && index >= 0 && index < cfg.azanPrayers.length && cfg.azanPrayers[index];
             if (wanted && index < Solat.NAMES.length && late > -60_000 && late < STALE_MS && on) {
-                Log.i(Solat.TAG, "azan " + Solat.NAMES[index]);
+                // Bloatless 3.0.3: the sound first, as a foreground service, then the card. Android may
+                // refuse the card over another app (no overlay permission); the azan still sounds.
+                boolean playing = AzanService.start(ctx, index, at);
                 Intent show = new Intent(ctx, AzanActivity.class)
                         .putExtra(Solat.EXTRA_INDEX, index)
                         .putExtra(Solat.EXTRA_AT, at)
+                        .putExtra(AzanActivity.EXTRA_PLAYING, playing)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 try {
                     ctx.startActivity(show);
+                    AzanService.log(ctx, "card asked for " + Solat.NAMES[index] + ", sound " + (playing ? "started" : "not started"));
                 } catch (Exception e) {
-                    Log.w(Solat.TAG, "can't show azan: " + e);
+                    AzanService.log(ctx, "can't show the card: " + e);
                 }
             } else {
-                Log.i(Solat.TAG, "azan skipped: wanted=" + wanted + " index=" + index + " late=" + late + "ms on=" + on);
+                AzanService.log(ctx, "azan skipped: wanted=" + wanted + " index=" + index + " late=" + late + "ms on=" + on);
             }
         }
         PendingResult result = goAsync();
