@@ -506,7 +506,7 @@ object IssueLinks {
     const val REPO = "https://github.com/theonlyajim/bloatless"   // Bloatless: reports come to this repo, not upstream
     // 0.4.7: the TV list page, which TVs get the new home screen now, in the test build, soon, the
     // clean-up only (and why) or not at all.
-    const val TV_LIST = "https://udhaykumarbala.github.io/cleanyourtv-app/tvs/"
+    const val TV_LIST = "https://ajimverse.com/bloatless/tvs/"   // Bloatless: our own copy (tools/bloatless-tvs/make.py)
     const val MAX_VALUE = 200
     // 0.4.6: GitHub answers HTTP 500 once the link and the request headers together pass about
     // 6,875 bytes (measured 2026-10-27: a bare request with a 6,900 character link works and 6,920

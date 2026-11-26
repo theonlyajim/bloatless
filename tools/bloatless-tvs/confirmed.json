@@ -1,0 +1,6 @@
+{
+ "note": "Kept by hand: TVs where Bloatless itself put the new home screen on and it stayed. Models only, never who. A row with an id already in site/tvs/tvs.json updates that row; a new id adds one.",
+ "tvs": [
+  {"id":"prismplus-prismplus-2ka-umeda","brand":"PrismPlus","name":"PrismPlus 2KA","models":["PrismPlus 2KA"],"codenames":["umeda"],"android":["14"],"status":"new","clean":"list","lists":["skyworth-swtv-22ae-fhd"],"reports":1,"bloatless":"1.0.3"}
+ ]
+}

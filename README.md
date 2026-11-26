@@ -50,7 +50,7 @@ changes anything, on the "What we found" screen, and why.
 | **Clean-up only, for now** | Most Google TV sets (their setup wizard holds the Wi-Fi, or the TV has no list yet), TVs the app has not met before, and Google's own Chromecast and TV Streamer (the switch would cost casting) | Switches off adverts, tracking and background apps. The TV keeps its own home screen, so it looks the same; the adverts drawn by that home screen stay with it |
 | **Not possible** | Fire TV, TCL's China builds, Android 7 and older | Clean-up only, and the app says so up front |
 
-The [TV list](https://udhaykumarbala.github.io/cleanyourtv-app/tvs/) says what each model gets today,
+The [TV list](https://ajimverse.com/bloatless/tvs/) says what each model gets today,
 which ones are in the test build, and which are coming soon. A TV with no list of its own moves up
 when its owners send its report from the app ("Help add this TV").
 
@@ -105,7 +105,7 @@ based on its brand.
   it is being careful. More can be switched off by hand under Customise.
 - **Other Android TVs** get the clean-up the app is sure about, and keep their own home screen until
   a list for them says the switch holds (see "What your TV gets" above and the
-  [TV list](https://udhaykumarbala.github.io/cleanyourtv-app/tvs/)).
+  [TV list](https://ajimverse.com/bloatless/tvs/)).
 - **Clean-up only** (the TV keeps its own home screen, and the app says why): Fire TV, TCL's China
   builds, Android 7, vendor home screens the app does not know, Chromecast with Google TV and the
   Google TV Streamer (the switch would cost casting), the Kalley and PRISM+ sets whose setup wizard
