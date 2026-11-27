@@ -50,6 +50,10 @@ object SessionConfig {
     const val INSTALL_BASE_MS = 60_000L
     const val INSTALL_BYTES_PER_SECOND = 50_000L
     const val INSTALL_IDLE_MS = 30_000L
+    // Bloatless 1.0.7: after the last byte, the TV checks and optimises the APK before it prints anything.
+    // A Mi Box S (Android 9) took longer than INSTALL_IDLE_MS for Nuvio's 53 MB, so the app gave up and
+    // dropped the connection while the install went on to finish. The answer gets this long instead.
+    const val INSTALL_ANSWER_MS = 300_000L
     const val INSTALL_OUTPUT_CAP = 16 * 1024
     const val REBOOT_EXEC_TIMEOUT_MS = 10_000L
     const val HASH_EXEC_TIMEOUT_MS = 60_000L

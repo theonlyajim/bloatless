@@ -66,6 +66,7 @@ class Faults {
     var pmDelayMs = 0L                   // every pm call stalls this long (1 GB TVs compacting)
     var pmBusy = false                   // every pm call fails with a busy error
     var installHang = false              // the streamed install never answers
+    var installAnswerDelayMs = 0L        // the TV checks the streamed APK this long before it answers (a slow TV, a big APK)
     var singleThreaded = false           // one stream served at a time
     var allow: AllowBehaviour = AllowBehaviour.Allow()
     var garbageBeforeConnect: ByteArray? = null   // hostile bytes where the handshake expects a frame
@@ -396,6 +397,7 @@ class ServerConnection(private val adbd: FakeAdbd, private val socket: AdbSocket
                     left -= chunk.size
                 }
                 if (faults.installHang) awaitCancellation()
+                if (faults.installAnswerDelayMs > 0) kotlinx.coroutines.delay(faults.installAnswerDelayMs)
                 val result = tv.installApk(bytes.toByteArray(), forUser0)
                 adbd.events += "install: $result"
                 s.write((result + "\n").encodeToByteArray())

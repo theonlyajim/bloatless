@@ -424,7 +424,7 @@ class AdbTvSession internal constructor(
         return call(RetryClass.NEVER) { conn ->
             val stream = conn.openBounded(AdbService.ExecInstall(size), SessionConfig.INSTALL_IDLE_MS)   // issue #616
             val hasher = Hasher()
-            val total = SessionConfig.INSTALL_BASE_MS + size * 1000 / SessionConfig.INSTALL_BYTES_PER_SECOND
+            val total = SessionConfig.INSTALL_BASE_MS + size * 1000 / SessionConfig.INSTALL_BYTES_PER_SECOND + SessionConfig.INSTALL_ANSWER_MS
             try {
                 bounded(total, "install") {
                     file.inputStream().use { input ->
@@ -443,7 +443,7 @@ class AdbTvSession internal constructor(
                     val reader = AdbStreamReader(stream)
                     val out = CappedBuffer(SessionConfig.INSTALL_OUTPUT_CAP)
                     while (true) {
-                        val chunk = bounded(SessionConfig.INSTALL_IDLE_MS, "install") { reader.readChunk(4096) } ?: break
+                        val chunk = bounded(SessionConfig.INSTALL_ANSWER_MS, "install") { reader.readChunk(4096) } ?: break
                         out.append(chunk)
                     }
                     parseInstallOutput(out.text())

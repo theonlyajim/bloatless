@@ -149,7 +149,19 @@ class SessionTransferTest {
         val t = currentTime
         val e = assertFailsWith<AdbException> { s.installStream(b, b.size) }
         assertEquals(AdbError.Transport.Timeout("install"), e.error)
-        assertEquals(SessionConfig.INSTALL_IDLE_MS, currentTime - t)
+        assertEquals(SessionConfig.INSTALL_ANSWER_MS, currentTime - t)
+    }
+
+    // Bloatless 1.0.7: a Mi Box S checked Nuvio's 53 MB for longer than the idle wait before it printed
+    // Success; the app had given up and said the app could not be added, though it was on the TV.
+    @Test fun aSlowAnswerAfterTheUploadStillCounts() = runTest {
+        val rig = Rig(this, faults = Faults().apply { installAnswerDelayMs = 4 * SessionConfig.INSTALL_IDLE_MS })
+        val s = rig.open()
+        val apk = ByteArray(300_000) { (it * 7).toByte() }
+        val b = blob(apk)
+        rig.tv.apkCatalog[sha256Hex(apk)] = FakePackage("com.nuvio.tv", "/data/app/com.nuvio.tv-1/base.apk", versionCode = 1081)
+        assertEquals(InstallOutcome.Installed, s.installStream(b, b.size))
+        assertEquals(1081, rig.tv.packages.getValue("com.nuvio.tv").versionCode)
     }
 
     @Test fun slowLinkStillCompletes() = runTest {
