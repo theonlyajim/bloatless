@@ -180,7 +180,7 @@ object RestoreBundleReader {
         val manifest = try { json.parseToJsonElement(files.getValue(RestoreBundle.MANIFEST).decodeToString()).jsonObject } catch (e: Exception) { fail("manifest.json is not JSON") }
         val listed = try {
             if (manifest["schema"]?.jsonPrimitive?.int != RestoreBundle.SCHEMA) fail("manifest schema is not ${RestoreBundle.SCHEMA}")
-            if (manifest["kind"]?.jsonPrimitive?.content != RestoreBundle.KIND) fail("not a Clean Your TV restore zip")
+            if (manifest["kind"]?.jsonPrimitive?.content != RestoreBundle.KIND) fail("not a Bloatless restore zip")
             val m = LinkedHashMap<String, Pair<Long, String>>()
             manifest.getValue("entries").jsonArray.forEach {
                 val o = it.jsonObject

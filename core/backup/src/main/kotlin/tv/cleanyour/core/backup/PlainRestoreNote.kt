@@ -25,7 +25,7 @@ class PlainRestoreNote : RestoreNote {
         return buildString {
             appendLine("Restore note for $tvName" + (room?.let { " ($it)" } ?: ""))
             appendLine()
-            appendLine("This TV was set up on ${TextSafety.oneLine(dateText, 40)} with Clean Your TV.")
+            appendLine("This TV was set up on ${TextSafety.oneLine(dateText, 40)} with Bloatless.")
             when (names.size) {
                 0 -> appendLine("Nothing on it is switched off.")
                 1 -> appendLine("One app was switched off. Nothing was deleted, and it can be switched back on with the remote.")
@@ -59,7 +59,7 @@ class PlainRestoreNote : RestoreNote {
                 }
             }
             appendLine()
-            append("The Clean Your TV app on the phone can also put everything back: Restore point > Undo everything.")
+            append("The Bloatless app on the phone can also put everything back: Restore point > Undo everything.")
         }
     }
 

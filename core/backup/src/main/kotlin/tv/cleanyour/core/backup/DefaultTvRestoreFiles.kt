@@ -71,8 +71,8 @@ class DefaultTvRestoreFiles(
         if (rest.isNotEmpty()) groups += (if (groups.isEmpty()) "Switched off" else "Also switched off") to rest
 
         val text = buildString {
-            appendLine("# Clean Your TV restore list for ${TextSafety.ascii(tv.nickname, 40)} (${TextSafety.ascii(tv.facts.model, 40)}), ${date(clock.nowMs())}.")
-            appendLine("# The apps Clean Your TV switched off on this TV, one per line. Nothing was uninstalled.")
+            appendLine("# Bloatless restore list for ${TextSafety.ascii(tv.nickname, 40)} (${TextSafety.ascii(tv.facts.model, 40)}), ${date(clock.nowMs())}.")
+            appendLine("# The apps Bloatless switched off on this TV, one per line. Nothing was uninstalled.")
             appendLine("# To switch them back on from a computer with upstream cleanyourtv tools:")
             appendLine("#   TV_HOST=<tv ip> tools/restore.sh restore.txt${stock?.let { " " + it.value } ?: ""}")
             appendLine("# Or with the remote: Settings > Apps > See all apps > Show system apps, pick the app, Enable.")

@@ -25,8 +25,8 @@ object RestoreScripts {
         val name = TextSafety.ascii(h.tvName, 40)
         val model = TextSafety.ascii(h.model, 40)
         appendLine("#!/bin/sh")
-        appendLine("# Clean Your TV: put back what we changed on $name ($model).")
-        appendLine("# Made on ${TextSafety.ascii(h.madeOn, 20)} by Clean Your TV ${TextSafety.ascii(h.appVersion, 20)} from the restore point on the phone.")
+        appendLine("# Bloatless: put back what we changed on $name ($model).")
+        appendLine("# Made on ${TextSafety.ascii(h.madeOn, 20)} by Bloatless ${TextSafety.ascii(h.appVersion, 20)} from the restore point on the phone.")
         appendLine("#")
         appendLine("# Run it on a computer that has adb (Android platform tools), with debugging on the TV:")
         appendLine("#   sh restore.sh --host 192.168.1.50   connect to the TV over the network first")
@@ -34,12 +34,12 @@ object RestoreScripts {
         appendLine("#   sh restore.sh                       use the only device adb knows")
         appendLine("# Options:")
         appendLine("#   --dry-run          print the TV commands; do not talk to the TV")
-        appendLine("#   --remove-apps      also remove the apps Clean Your TV installed (its home screen and cards)")
+        appendLine("#   --remove-apps      also remove the apps Bloatless installed (its home screen and cards)")
         appendLine("#   --allow-other-tv   run even when the TV is not the one this script was made for")
         appendLine("#")
         appendLine("# Before changing anything the script checks that it talks to the right TV. It compares a")
         appendLine("# fingerprint of the TV's serial number and device name with TV_ID below; the serial number")
-        appendLine("# itself is not in this file. Each thing goes back to how it was before Clean Your TV first")
+        appendLine("# itself is not in this file. Each thing goes back to how it was before Bloatless first")
         appendLine("# changed it, in this order: apps switched on or off, settings, the home screen, the apps it")
         appendLine("# installed, its files. A step that fails is reported and the rest still run.")
         appendLine()
@@ -51,7 +51,7 @@ object RestoreScripts {
         appendLine()
         append(SH_BODY)
         appendLine()
-        appendLine("say 'Putting back what Clean Your TV changed on %s.' \"\$TV_NAME\"")
+        appendLine("say 'Putting back what Bloatless changed on %s.' \"\$TV_NAME\"")
         appendLine()
         for (s in steps) {
             when (s.kind) {
@@ -67,8 +67,8 @@ object RestoreScripts {
     fun ps1(h: ScriptHeader, steps: List<RestoreStep>): String = buildString {
         val name = TextSafety.ascii(h.tvName, 40)
         val model = TextSafety.ascii(h.model, 40)
-        appendLine("# Clean Your TV: put back what we changed on $name ($model).")
-        appendLine("# Made on ${TextSafety.ascii(h.madeOn, 20)} by Clean Your TV ${TextSafety.ascii(h.appVersion, 20)} from the restore point on the phone.")
+        appendLine("# Bloatless: put back what we changed on $name ($model).")
+        appendLine("# Made on ${TextSafety.ascii(h.madeOn, 20)} by Bloatless ${TextSafety.ascii(h.appVersion, 20)} from the restore point on the phone.")
         appendLine("#")
         appendLine("# Run it on a computer that has adb (Android platform tools), with debugging on the TV:")
         appendLine("#   powershell -ExecutionPolicy Bypass -File restore.ps1 -TvHost 192.168.1.50")
@@ -76,12 +76,12 @@ object RestoreScripts {
         appendLine("#   powershell -ExecutionPolicy Bypass -File restore.ps1")
         appendLine("# Options:")
         appendLine("#   -DryRun         print the TV commands; do not talk to the TV")
-        appendLine("#   -RemoveApps     also remove the apps Clean Your TV installed (its home screen and cards)")
+        appendLine("#   -RemoveApps     also remove the apps Bloatless installed (its home screen and cards)")
         appendLine("#   -AllowOtherTv   run even when the TV is not the one this script was made for")
         appendLine("#")
         appendLine("# Before changing anything the script checks that it talks to the right TV. It compares a")
         appendLine("# fingerprint of the TV's serial number and device name with TvId below; the serial number")
-        appendLine("# itself is not in this file. Each thing goes back to how it was before Clean Your TV first")
+        appendLine("# itself is not in this file. Each thing goes back to how it was before Bloatless first")
         appendLine("# changed it, in this order: apps switched on or off, settings, the home screen, the apps it")
         appendLine("# installed, its files. A step that fails is reported and the rest still run.")
         appendLine("param(")
@@ -98,7 +98,7 @@ object RestoreScripts {
         appendLine()
         append(PS_BODY)
         appendLine()
-        appendLine("Say (\"Putting back what Clean Your TV changed on {0}.\" -f \$TvName)")
+        appendLine("Say (\"Putting back what Bloatless changed on {0}.\" -f \$TvName)")
         appendLine()
         for (s in steps) {
             when (s.kind) {
@@ -112,12 +112,12 @@ object RestoreScripts {
     }
 
     fun commandsTxt(h: ScriptHeader, steps: List<RestoreStep>): String = buildString {
-        appendLine("# Clean Your TV: the TV commands that put back what we changed on ${TextSafety.ascii(h.tvName, 40)} (${TextSafety.ascii(h.model, 40)}).")
-        appendLine("# Made on ${TextSafety.ascii(h.madeOn, 20)} by Clean Your TV ${TextSafety.ascii(h.appVersion, 20)}.")
+        appendLine("# Bloatless: the TV commands that put back what we changed on ${TextSafety.ascii(h.tvName, 40)} (${TextSafety.ascii(h.model, 40)}).")
+        appendLine("# Made on ${TextSafety.ascii(h.madeOn, 20)} by Bloatless ${TextSafety.ascii(h.appVersion, 20)}.")
         appendLine("# One command per line, for upstream tools/tv.py batch mode:")
         appendLine("#   TV_HOST=<tv ip> tools/venv/bin/python tools/tv.py --batch < commands.txt")
         appendLine("# tv.py does not check which TV it talks to; restore.sh and restore.ps1 do.")
-        appendLine("# A line starting with \"# remove-app: \" uninstalls an app Clean Your TV installed. Delete that")
+        appendLine("# A line starting with \"# remove-app: \" uninstalls an app Bloatless installed. Delete that")
         appendLine("# prefix to run it too.")
         for (s in steps) {
             when (s.kind) {

@@ -1,11 +1,11 @@
-Clean Your TV: problem report
+Bloatless: problem report
 App: 0.3.7 (full)
 Phone: Realme RMX1921, Android 11
 
 TV: none read yet
 
 Diagnostics log (addresses, serial numbers, keys and codes removed)
-Clean Your TV 0.3.7, Android 30
+Bloatless 0.3.7, Android 30
 (212 older lines left out)
 1793003357919 I setup: connect start (new TV, android_tv_remote+google_cast+adb_mdns)
 1793003359063 I setup: connect failed unreachable

@@ -1,4 +1,4 @@
-Clean Your TV: TV report
+Bloatless: TV report
 App: 0.4.6-beta2 (full)
 Phone: Xiaomi 2506BPN68G, Android 17
 

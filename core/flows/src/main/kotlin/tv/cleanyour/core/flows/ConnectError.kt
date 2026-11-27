@@ -25,7 +25,7 @@ data class ConnectError(val kind: String, val summary: String, val debuggingOff:
 // IPv6 addresses (the last octet the Redactor keeps too) and local host names.
 object ConnectErrorSummary {
     const val LOG_LINES = 10
-    private const val HEADER = "Clean Your TV "
+    private const val HEADER = "Bloatless "
     private const val OCTET = "(?:25[0-5]|2[0-4]\\d|[01]?\\d?\\d)"
     private val IPV4 = Regex("(?<![A-Za-z0-9.])$OCTET\\.$OCTET\\.$OCTET\\.$OCTET(?![A-Za-z0-9]|\\.[A-Za-z0-9])")
     private val MASKED_IPV4 = Regex("x\\.x\\.x\\.\\d{1,3}")
@@ -45,7 +45,7 @@ object ConnectErrorSummary {
     fun build(about: AppAbout?, kind: String, detail: String?, log: String): String {
         val lines = log.lines().filter { it.isNotBlank() }.filterNot { it.startsWith(HEADER) }.takeLast(LOG_LINES)
         return buildList {
-            add("Clean Your TV connection error")
+            add("Bloatless connection error")
             add("App: ${about?.appLine ?: "unknown"}")
             add("Phone: ${about?.phoneAndroid?.ifBlank { null } ?: "Android unknown"}")
             add("Error: $kind" + (detail?.let { " ($it)" } ?: ""))

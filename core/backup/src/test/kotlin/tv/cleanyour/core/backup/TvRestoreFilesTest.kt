@@ -72,7 +72,7 @@ class TvRestoreFilesTest {
     @Test fun restoreTxtListsWhatIsOffNow() {
         val txt = files.restoreTxt(tv, changes, null).decodeToString()
         assertEquals(Scenario.expectedOff().map { it.value }, listed(txt))
-        assertTrue(txt.lines().first().startsWith("# Clean Your TV restore list for Mi TV 4A (MiTV-AXSO0), 2025-10-09."), txt)
+        assertTrue(txt.lines().first().startsWith("# Bloatless restore list for Mi TV 4A (MiTV-AXSO0), 2025-10-09."), txt)
         assertTrue(txt.contains("tools/restore.sh restore.txt com.google.android.tvlauncher"), txt)
         assertTrue(txt.lines().all { Regex("^[ -~]*$").matches(it) })
     }

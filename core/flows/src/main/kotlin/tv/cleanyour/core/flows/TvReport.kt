@@ -155,7 +155,7 @@ object TvReport {
 
     // B1 "Help add this TV": the whole TV report, system packages included, one per line. Share sends it.
     fun text(input: TvReportInput): String = buildString {
-        appendLine("Clean Your TV: TV report")
+        appendLine("Bloatless: TV report")
         appendHeader(input.about)
         appendTv(input, Packages.LINES)
     }.trimEnd() + "\n"
@@ -167,7 +167,7 @@ object TvReport {
     // in the first group; one that came back on is in its state's group. Real reports of 110 to 130
     // system packages come to about 5,000 characters encoded, under the link's cap.
     fun compact(input: TvReportInput): String = buildString {
-        appendLine("Clean Your TV: TV report")
+        appendLine("Bloatless: TV report")
         appendHeader(input.about)
         appendTv(input, Packages.GROUPED)
     }.trimEnd() + "\n"
@@ -187,7 +187,7 @@ object TvReport {
         about: AppAbout, input: TvReportInput?, log: String, context: ReportContext? = null, names: Boolean = true,
         redact: (String) -> String = { it },
     ): String = buildString {
-        appendLine("Clean Your TV: problem report")
+        appendLine("Bloatless: problem report")
         appendHeader(about)
         if (context != null) appendContext(context, redact)
         if (input != null) appendTv(input, Packages.NONE, names) else { appendLine(); appendLine("TV: none read yet") }
@@ -271,7 +271,7 @@ object TvReport {
     fun confirmation(about: AppAbout, input: TvReportInput, restarts: RestartFacts): String = buildString {
         val s = input.snapshot
         val f = s.facts
-        appendLine("Clean Your TV: confirmation")
+        appendLine("Bloatless: confirmation")
         appendLine("Format: ${ItWorked.FORMAT}")
         appendHeaderOnly(about)
         appendLine("Build kind: ${about.buildKind}")

@@ -144,8 +144,8 @@ class ProblemReportsTest {
         val p = parse(fixture(1136))
         val about = p.about
         for (log in listOf(
-            "Clean Your TV 0.4.6, Android 36\n" + (1..5_000).joinToString("\n") { "17930256${"%05d".format(it)} I setup: line $it " + "x y ".repeat(60) },
-            "Clean Your TV 0.4.6, Android 36\n" + "z".repeat(30_000),
+            "Bloatless 0.4.6, Android 36\n" + (1..5_000).joinToString("\n") { "17930256${"%05d".format(it)} I setup: line $it " + "x y ".repeat(60) },
+            "Bloatless 0.4.6, Android 36\n" + "z".repeat(30_000),
             "", "only a head",
         )) {
             for (input in listOf(p.input, null)) {
@@ -155,7 +155,7 @@ class ProblemReportsTest {
             }
         }
         // A report that fits is sent whole, with no line about older lines.
-        val short = ProblemReports.fit(about, p.input, "Clean Your TV 0.4.6, Android 36\n1793025667496 I setup: connect start", stepCtx)
+        val short = ProblemReports.fit(about, p.input, "Bloatless 0.4.6, Android 36\n1793025667496 I setup: connect start", stepCtx)
         assertFalse(short.shortened)
         assertFalse("left out" in short.sent)
     }
@@ -286,7 +286,7 @@ class ProblemReportsTest {
         assertTrue("session: socket connect failed: SocketTimeoutException (x3, last at 1793114501712)" in collapsed, collapsed)
         assertEquals(p.log.lines().size - 9, collapsed.lines().size, collapsed)
         // Lines that do not repeat, and the first line, stay as they are.
-        assertTrue(collapsed.startsWith("Clean Your TV 0.4.6-beta2, Android 37\n1793028050368 I setup: connect start (new TV, manual)\n"), collapsed)
+        assertTrue(collapsed.startsWith("Bloatless 0.4.6-beta2, Android 37\n1793028050368 I setup: connect start (new TV, manual)\n"), collapsed)
         // However long the log, the line after the header is the names or the note.
         for (extra in listOf(0, 40, 200)) {
             val log = p.log + (1..extra).joinToString("") { "\n17931146${10000 + it} I setup: probe done in ${it} ms, 117 packages, profile brand set Xiaomi" }
@@ -303,8 +303,8 @@ class ProblemReportsTest {
     // beta2 QA: the door's retries in turn ("connect start", "connect failed lost") are one pair.
     @Test fun aRetryingPairIsCountedOnce() {
         val pairs = (0 until 12).flatMap { i -> listOf("${1000 + 4 * i} I setup: connect start (manual)", "${1002 + 4 * i} I setup: connect failed lost") }
-        val log = (listOf("Clean Your TV 0.4.6, Android 14", "999 I setup: probe start") + pairs + "1100 I setup: door closed").joinToString("\n")
-        assertEquals(listOf("Clean Your TV 0.4.6, Android 14", "999 I setup: probe start", "1000 I setup: connect start (manual)",
+        val log = (listOf("Bloatless 0.4.6, Android 14", "999 I setup: probe start") + pairs + "1100 I setup: door closed").joinToString("\n")
+        assertEquals(listOf("Bloatless 0.4.6, Android 14", "999 I setup: probe start", "1000 I setup: connect start (manual)",
             "1002 I setup: connect failed lost (with the line above, x12, last at 1046)", "1100 I setup: door closed").joinToString("\n"),
             ProblemReports.collapseRepeats(log))
         // Two of a kind are left as they are.

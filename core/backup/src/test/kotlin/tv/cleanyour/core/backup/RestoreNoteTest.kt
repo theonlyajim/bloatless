@@ -39,7 +39,7 @@ class RestoreNoteTest {
         val lines = text.lines()
         assertTrue(lines.size < 60, "${lines.size} lines:\n$text")
         assertEquals("Restore note for Mi TV 4A (Living room)", lines.first())
-        assertTrue(text.contains("set up on 19 October 2026 with Clean Your TV"))
+        assertTrue(text.contains("set up on 19 October 2026 with Bloatless"))
         assertTrue(text.contains("Settings > Apps > See all apps > Show system apps"))
         assertTrue(text.contains("1. ") && text.contains("2. ") && text.contains("3. Choose Enable."))
         assertTrue(text.contains("enable \"Android TV Home\" first"))

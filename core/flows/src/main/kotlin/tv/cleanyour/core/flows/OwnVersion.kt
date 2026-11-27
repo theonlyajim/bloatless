@@ -17,13 +17,13 @@ object OwnVersion {
     fun isVersion(s: String): Boolean = VERSION.matches(s)
 
     // Runs `mask` over `text` but keeps `version` (the running app's) whole where a line starts with
-    // the app's own words for it: "Clean Your TV " (the diagnostics log's first line) or "App: " (a
+    // the app's own words for it: "Bloatless " (the diagnostics log's first line) or "App: " (a
     // report's and "Copy error"'s App line). The text around it is masked in pieces, cut at the
     // version, which only ever sits between a space and a space, a comma, a bracket or the line's
     // end, so no mask loses a match it had. The same digits inside a log line are masked as before.
     fun keep(text: String, version: String?, mask: (String) -> String): String {
         if (version == null || !isVersion(version)) return mask(text)
-        val own = Regex("(?m)^(?:Clean Your TV |App: )(${Regex.escape(version)})(?=[ ,(]|$)")
+        val own = Regex("(?m)^(?:Bloatless |App: )(${Regex.escape(version)})(?=[ ,(]|$)")
         val out = StringBuilder()
         var from = 0
         for (m in own.findAll(text)) {

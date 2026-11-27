@@ -19,12 +19,12 @@ class ConnectErrorTest {
     private val about = AppAbout("0.3.6", "full", "Xiaomi 2201117TG", "Android 13")
     private val other = "192.0.2.20"   // a TV whose port answers but whose connection fails
 
-    private fun log(n: Int) = "Clean Your TV 0.3.6, Android 33\n" + (1..n).joinToString("\n") { "17000000000$it I setup: line $it" }
+    private fun log(n: Int) = "Bloatless 0.3.6, Android 33\n" + (1..n).joinToString("\n") { "17000000000$it I setup: line $it" }
 
     @Test fun theSummaryNamesTheAppThePhoneTheErrorAndTheLastLines() {
         val s = ConnectErrorSummary.build(about, "unreachable", "NoRouteToHostException, EHOSTUNREACH (No route to host)", log(14))
         val lines = s.lines()
-        assertEquals("Clean Your TV connection error", lines[0])
+        assertEquals("Bloatless connection error", lines[0])
         assertEquals("App: 0.3.6 (full)", lines[1])
         assertEquals("Phone: Android 13", lines[2])
         assertEquals("Error: unreachable (NoRouteToHostException, EHOSTUNREACH (No route to host))", lines[3])
@@ -48,7 +48,7 @@ class ConnectErrorTest {
     // line, are masked as before.
     @Test fun theAppsFourPartVersionIsKeptAndAddressesAreNot() {
         val hotfix = AppAbout("0.4.6.1", "full", "Pixel 8", "Android 15")
-        val log = "Clean Your TV 0.4.6.1, Android 35\n1 I setup: connect 0.4.6.1 refused by 192.168.1.23\n2 I setup: App: 0.4.6.1"
+        val log = "Bloatless 0.4.6.1, Android 35\n1 I setup: connect 0.4.6.1 refused by 192.168.1.23\n2 I setup: App: 0.4.6.1"
         val s = ConnectErrorSummary.build(hotfix, "refused", "ConnectException, 192.168.1.23", log)
         val lines = s.lines()
         assertEquals("App: 0.4.6.1 (full)", lines[1])
@@ -56,8 +56,8 @@ class ConnectErrorTest {
         assertEquals(listOf("1 I setup: connect [address] refused by [address]", "2 I setup: App: [address]"), lines.drop(5))
         assertEquals("App: 0.4.7.1-beta1 (full)", ConnectErrorSummary.build(hotfix.copy(version = "0.4.7.1-beta1"), "refused", null, "").lines()[1])
         // Only the running app's version is kept: another dotted quad on the same line still goes.
-        assertEquals("Clean Your TV [address], Android 35", ConnectErrorSummary.redact("Clean Your TV 10.0.0.5, Android 35", "0.4.6.1"))
-        assertEquals("Clean Your TV 0.4.6.1, at [address]", ConnectErrorSummary.redact("Clean Your TV 0.4.6.1, at 192.168.1.23", "0.4.6.1"))
+        assertEquals("Bloatless [address], Android 35", ConnectErrorSummary.redact("Bloatless 10.0.0.5, Android 35", "0.4.6.1"))
+        assertEquals("Bloatless 0.4.6.1, at [address]", ConnectErrorSummary.redact("Bloatless 0.4.6.1, at 192.168.1.23", "0.4.6.1"))
         assertEquals("[address]", ConnectErrorSummary.redact("0.4.6.1"))
     }
 

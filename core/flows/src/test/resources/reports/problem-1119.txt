@@ -1,4 +1,4 @@
-Clean Your TV: problem report
+Bloatless: problem report
 App: 0.4.6-beta2 (full)
 Phone: Xiaomi 25053PC47I, Android 17
 
@@ -29,7 +29,7 @@ Switched off by this app (4):
 co.sensara.tv.mitv, com.android.camera2, com.android.gallery3d, com.xiaomi.mitv.tvmanager
 
 Diagnostics log (addresses, serial numbers, keys and codes removed)
-Clean Your TV 0.4.6-beta2, Android 37
+Bloatless 0.4.6-beta2, Android 37
 1793028050368 I setup: connect start (new TV, manual)
 1793028056401 I setup: connected (allow dialog shown, identity check not needed)
 1793028057005 I setup: probe start

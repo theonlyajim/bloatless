@@ -1,4 +1,4 @@
-Clean Your TV: problem report
+Bloatless: problem report
 App: 0.4.0 (full)
 Phone: Google Pixel 8a, Android 17
 
@@ -30,7 +30,7 @@ com.google.android.tvrecommendations, com.google.android.youtube.tvmusic, com.ne
 com.xm.webcontent, tv.alphonso.alphonso_eula
 
 Diagnostics log (addresses, serial numbers, keys and codes removed)
-Clean Your TV 0.4.0, Android 37
+Bloatless 0.4.0, Android 37
 1793028819004 I setup: connect start (new TV, google_cast+adb_mdns+android_tv_remote)
 1793028825909 I setup: connected (allow dialog shown, identity check not needed)
 1793028826515 I setup: probe start

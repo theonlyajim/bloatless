@@ -1,4 +1,4 @@
-Clean Your TV: problem report
+Bloatless: problem report
 App: 0.4.0 (full)
 Phone: motorola edge 50 neo, Android 16
 
@@ -25,7 +25,7 @@ Claimant: com.android.tv.settings/.system.FallbackHome priority -1000
 Apps: 113 system, 7 other
 
 Diagnostics log (addresses, serial numbers, keys and codes removed)
-Clean Your TV 0.4.0, Android 36
+Bloatless 0.4.0, Android 36
 1793025667496 I setup: connect start (new TV, google_cast+adb_mdns+android_tv_remote)
 1793025679874 I setup: connect failed lost
 1793025682088 I setup: connect start (new TV, google_cast+adb_mdns+android_tv_remote)

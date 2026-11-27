@@ -257,7 +257,7 @@ class RestartCountTest {
         val s = report.state.value
         assertTrue(s.available)
         val expected = """
-            Clean Your TV: confirmation
+            Bloatless: confirmation
             Format: 1
             App: 0.4.8 (full)
             Build kind: test build

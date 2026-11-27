@@ -1,4 +1,4 @@
-Clean Your TV: TV report
+Bloatless: TV report
 App: 0.4.0 (full)
 Phone: Xiaomi 25053PC47I, Android 17
 

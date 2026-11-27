@@ -71,7 +71,7 @@ class ConnectionDetailsTest {
             "fedcba9876543210", tv.id.value, "QUFBQUIz", "AAAAB3Nza", "3A:91:0C", "AB:CD", "MiTV-AXSO0",
         ).forEach { secret -> assertFalse(text.contains(secret, ignoreCase = true), "\"$secret\" leaked:\n$text") }
 
-        assertTrue(text.startsWith("Clean Your TV: connection details\nApp: 0.4.7-beta4 (full)\nPhone: Xiaomi Redmi Note 12, Android 14\n"), text)
+        assertTrue(text.startsWith("Bloatless: connection details\nApp: 0.4.7-beta4 (full)\nPhone: Xiaomi Redmi Note 12, Android 14\n"), text)
         listOf(
             "Waiting sheet: not open",
             "On Wi-Fi: yes", "Transports: Wi-Fi, VPN", "VPN active: yes", "Private DNS: a host name is set (not shown)",

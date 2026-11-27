@@ -1,4 +1,4 @@
-Clean Your TV: TV report
+Bloatless: TV report
 App: 0.3.7 (full)
 Phone: OnePlus LE2101, Android 14
 

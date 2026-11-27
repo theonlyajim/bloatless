@@ -65,15 +65,15 @@ class RedactorTest {
     // four-part hotfix version is four octets. The header keeps the running app's version; an
     // address on the same line, and the same digits inside a log line, still go.
     @Test fun theAppsOwnFourPartVersionSurvivesTheHeader() {
-        val header = runBlocking { LogDiagnostics("0.4.6.1") { "Clean Your TV 0.4.6.1, Android 33, at 192.168.1.23" }.redactedText() }.lines().first()
-        assertEquals("Clean Your TV 0.4.6.1, Android 33, at x.x.x.23", header)
-        val text = "Clean Your TV 0.4.6.1, Android 33\n1792745323148 I setup: connect 0.4.6.1 refused by 192.168.1.23\nApp: 0.4.6.1 (full)"
-        assertEquals("Clean Your TV 0.4.6.1, Android 33\n1792745323148 I setup: connect x.x.x.1 refused by x.x.x.23\nApp: 0.4.6.1 (full)",
+        val header = runBlocking { LogDiagnostics("0.4.6.1") { "Bloatless 0.4.6.1, Android 33, at 192.168.1.23" }.redactedText() }.lines().first()
+        assertEquals("Bloatless 0.4.6.1, Android 33, at x.x.x.23", header)
+        val text = "Bloatless 0.4.6.1, Android 33\n1792745323148 I setup: connect 0.4.6.1 refused by 192.168.1.23\nApp: 0.4.6.1 (full)"
+        assertEquals("Bloatless 0.4.6.1, Android 33\n1792745323148 I setup: connect x.x.x.1 refused by x.x.x.23\nApp: 0.4.6.1 (full)",
             OwnVersion.keep(text, "0.4.6.1", Redactor::redact))
-        assertEquals("Clean Your TV 0.4.7.1-beta1, Android 33", OwnVersion.keep("Clean Your TV 0.4.7.1-beta1, Android 33", "0.4.7.1-beta1", Redactor::redact))
+        assertEquals("Bloatless 0.4.7.1-beta1, Android 33", OwnVersion.keep("Bloatless 0.4.7.1-beta1, Android 33", "0.4.7.1-beta1", Redactor::redact))
         // Without the version, or with another one, every dotted quad goes as before.
-        assertEquals("Clean Your TV x.x.x.1, Android 33", Redactor.redact("Clean Your TV 0.4.6.1, Android 33"))
-        assertEquals("Clean Your TV x.x.x.5, Android 33", OwnVersion.keep("Clean Your TV 10.0.0.5, Android 33", "0.4.6.1", Redactor::redact))
-        assertEquals("Clean Your TV x.x.x.1, Android 33", OwnVersion.keep("Clean Your TV 0.4.6.1, Android 33", null, Redactor::redact))
+        assertEquals("Bloatless x.x.x.1, Android 33", Redactor.redact("Bloatless 0.4.6.1, Android 33"))
+        assertEquals("Bloatless x.x.x.5, Android 33", OwnVersion.keep("Bloatless 10.0.0.5, Android 33", "0.4.6.1", Redactor::redact))
+        assertEquals("Bloatless x.x.x.1, Android 33", OwnVersion.keep("Bloatless 0.4.6.1, Android 33", null, Redactor::redact))
     }
 }

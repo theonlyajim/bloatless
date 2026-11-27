@@ -68,7 +68,7 @@ class ConnectionDetails(
         val log = attempt { diagnostics.redactedText() }.getOrDefault("").lines().filter { ACCESS in it }.takeLast(LOG_LINES)
 
         val text = buildString {
-            appendLine("Clean Your TV: connection details")
+            appendLine("Bloatless: connection details")
             appendLine("App: ${OwnVersion.field(about.appLine) { LogCodes.clean(it, 120) }.ifEmpty { "unknown" }}")
             appendLine("Phone: ${LogCodes.clean(about.phoneLine, 120).ifEmpty { "unknown" }}")
             appendLine("Waiting sheet: ${reachLine()}")

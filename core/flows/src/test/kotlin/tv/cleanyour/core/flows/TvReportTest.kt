@@ -66,7 +66,7 @@ class TvReportTest {
     )
 
     private val expected = """
-        Clean Your TV: TV report
+        Bloatless: TV report
         App: 0.3.2 (full)
         Phone: Samsung SM-S921B, Android 16
 
@@ -220,7 +220,7 @@ class TvReportTest {
     }
 
     @Test fun theBugReportLinkPrefillsVersionPhoneAndTv() {
-        val log = "Clean Your TV 0.3.2, Android 36\n1792745323148 I setup: run paused STEP_FAILED at step 72"
+        val log = "Bloatless 0.3.2, Android 36\n1792745323148 I setup: run paused STEP_FAILED at step 72"
         val report = TvReport.problem(about, input(), log)
         val link = IssueLinks.bugReport(about, input(), report)
         assertTrue(link.reportInLink)
@@ -264,9 +264,9 @@ class TvReportTest {
 
     // B2: the TV summary without the package list, then the log as the app's redactor left it.
     @Test fun theProblemReportHasTheSummaryAndTheLog() {
-        val log = "Clean Your TV 0.3.2, Android 36\n1792745323148 I setup: run paused STEP_FAILED at step 72"
+        val log = "Bloatless 0.3.2, Android 36\n1792745323148 I setup: run paused STEP_FAILED at step 72"
         val text = TvReport.problem(about, input(), log)
-        assertTrue(text.startsWith("Clean Your TV: problem report\nApp: 0.3.2 (full)\nPhone: Samsung SM-S921B, Android 16\n"), text)
+        assertTrue(text.startsWith("Bloatless: problem report\nApp: 0.3.2 (full)\nPhone: Samsung SM-S921B, Android 16\n"), text)
         assertTrue("Model: 55A6H" in text && "Profile: brand set Hisense" in text && "Apps: 4 system, 2 other" in text)
         // Issue #375: what this app switched off is named (the TV's own apps); no other package is.
         assertTrue("Apps: 4 system, 2 other\n\nSwitched off by this app (1):\n${storeDemo.value}\n\nDiagnostics log" in text, text)
@@ -292,9 +292,9 @@ class TvReportTest {
 
     // The log can be megabytes; the report keeps its first line and the newest lines.
     @Test fun aLongLogKeepsItsHeadAndItsNewestLines() {
-        val log = (listOf("Clean Your TV 0.3.2, Android 36") + (1..1_000).map { "line $it" }).joinToString("\n")
+        val log = (listOf("Bloatless 0.3.2, Android 36") + (1..1_000).map { "line $it" }).joinToString("\n")
         val lines = ReportMachine.tail(log).lines()
-        assertEquals("Clean Your TV 0.3.2, Android 36", lines[0])
+        assertEquals("Bloatless 0.3.2, Android 36", lines[0])
         assertEquals("(700 older lines left out)", lines[1])
         assertEquals("line 701", lines[2])
         assertEquals("line 1000", lines.last())
@@ -323,12 +323,12 @@ class TvReportTest {
         val restarts = RestartFacts(HomePath.LIST, RestartTally(held = 1, build = "0.4.6.1 (full, release)"), "provider")
         val home = HomeDecision(false, "UNKNOWN_HOME", app = "0.4.7.1-beta1", profile = "brand set Hisense")
         val input = input().copy(about = hotfix, home = home, homeEarlier = true, restarts = restarts)
-        val log = "Clean Your TV 0.4.6.1, Android 36\n1792745323148 I setup: connect 0.4.6.1 refused by 192.168.1.23"
+        val log = "Bloatless 0.4.6.1, Android 36\n1792745323148 I setup: connect 0.4.6.1 refused by 192.168.1.23"
         val text = TvReport.problem(hotfix, input, log, ReportContext("Setup", "card", "CONNECT_FAILED", connect = true, error = "refused 192.168.1.23"))
-        assertTrue(text.startsWith("Clean Your TV: problem report\nApp: 0.4.6.1 (full)\n"), text)
+        assertTrue(text.startsWith("Bloatless: problem report\nApp: 0.4.6.1 (full)\n"), text)
         assertTrue("Counted by: 0.4.6.1 (full, release)\n" in text, text)
         assertTrue("(from an earlier Setup: 0.4.7.1-beta1, brand set Hisense)" in text, text)
-        assertTrue("\nClean Your TV 0.4.6.1, Android 36\n1792745323148 I setup: connect [address] refused by [address]\n" in text, text)
+        assertTrue("\nBloatless 0.4.6.1, Android 36\n1792745323148 I setup: connect [address] refused by [address]\n" in text, text)
         assertTrue("Error: refused [address]" in text, text)
         assertFalse("192.168" in text || "x.x.x" in text, text)
         // The TV report's header and a beta's App line too; a value that is not a version is still masked.
